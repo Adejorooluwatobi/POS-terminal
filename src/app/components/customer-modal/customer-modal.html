@@ -1,0 +1,42 @@
+<div *ngIf="isOpen" class="modal-wrap">
+  <div class="modal" style="max-width:360px;">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:700;">Customer Lookup</span>
+      <button (click)="closeModal()" class="btn btn-ghost btn-xs">✕</button>
+    </div>
+    <div style="padding:14px 16px;">
+      <input 
+        #custSearchInput 
+        class="inp" 
+        style="margin-bottom:10px;"
+        placeholder="Phone, email, or loyalty #…" 
+        (input)="onSearch($event)"
+      >
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div *ngFor="let c of searchResults()" 
+             (click)="onSelect(c)"
+             style="padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:12px;font-weight:600;">{{ c.name }}</div>
+            <div class="mono" style="font-size:10px;color:var(--text3);">{{ c.phone }}</div>
+          </div>
+          <div style="text-align:right;">
+            <span class="tag" [ngClass]="{
+              'tag-purple': c.tier === 'PLATINUM',
+              'tag-amber': c.tier === 'GOLD',
+              'tag-dim': c.tier === 'SILVER',
+              'tag-green': c.tier === 'BRONZE'
+            }" style="font-size:9px;">{{ c.tier }}</span>
+            <div class="mono" style="font-size:10px;color:var(--accent);margin-top:3px;">{{ c.points.toLocaleString() }} pts</div>
+          </div>
+        </div>
+        
+        <div *ngIf="custSearchInput.value.length > 1 && searchResults().length === 0" 
+             class="text-center text-[var(--text3)] text-[12px] p-[12px]">
+          No customer found
+        </div>
+      </div>
+      <button (click)="setWalkin()" class="btn btn-ghost btn-sm w-full justify-center mt-[10px]">Continue as Walk-in</button>
+    </div>
+  </div>
+</div>

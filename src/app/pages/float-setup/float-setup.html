@@ -1,0 +1,34 @@
+<div class="fixed inset-0 flex items-center justify-center" style="background:var(--bg);">
+  <div style="width:320px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Open Till</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:20px;">Count the opening float and enter below</div>
+      
+      <!-- Staff Badge -->
+      <div *ngIf="auth.currentStaff() as staff" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:16px;">
+        <div [style.background]="staff.color + '22'" [style.border-color]="staff.color + '66'" [style.color]="staff.color"
+             style="width:30px;height:30px;border-radius:50%;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;">
+          {{ staff.initials }}
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;">{{ staff.name }}</div>
+          <div style="font-size:10px;color:var(--text3);">{{ staff.role }} · {{ staff.store }}</div>
+        </div>
+      </div>
+
+      <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Opening Float (₦)</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:8px;padding:9px 12px;margin-bottom:16px;">
+        <span class="mono" style="color:var(--accent);font-size:15px;">₦</span>
+        <input 
+          class="mono" 
+          style="background:none;border:none;outline:none;color:var(--text);font-size:16px;width:100%;" 
+          type="number" 
+          [(ngModel)]="floatValue"
+        >
+      </div>
+      <button (click)="openTill()" class="btn btn-accent btn-md" style="width:100%;justify-content:center;font-size:13px;padding:10px;">
+        Open Till & Begin Shift →
+      </button>
+    </div>
+  </div>
+</div>

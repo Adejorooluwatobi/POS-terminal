@@ -1,0 +1,92 @@
+<div style="flex:1;display:flex;flex-direction:column;background:var(--bg);">
+
+  <!-- TX header -->
+  <div style="padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:12px;font-weight:600;">Transaction</span>
+        <span class="tag tag-accent mono">{{ pos.txCounter() | number:'3.0-0' }}</span>
+        <span class="tag tag-dim mono">{{ 'now' | date:'dd MMM' }}</span>
+      </div>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:5px;">
+      <!-- Customer -->
+      <button (click)="onOpenCustomerModal()" class="btn btn-ghost btn-xs">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0116 0"/></svg>
+        <span>{{ (pos.currentCustomer()?.name ?? '').split(' ')[0] || 'Walk-in' }}</span>
+      </button>
+      <button (click)="pos.holdTransaction()" class="btn btn-ghost btn-xs">Hold</button>
+      <button (click)="onVoid()" class="btn btn-danger btn-xs">Void TX</button>
+      <button (click)="pos.clearCart()" class="btn btn-danger btn-xs">Clear</button>
+    </div>
+  </div>
+
+  <!-- Cart items -->
+  <div class="thin-scroll" style="flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:4px;">
+    <!-- Empty state -->
+    <div *ngIf="pos.cart().length === 0" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+      <div style="width:48px;height:48px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;">
+         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text3);"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      </div>
+      <div style="font-size:12px;color:var(--text2);">Cart is empty</div>
+      <div style="font-size:10px;color:var(--text3);">Scan a barcode or select a product</div>
+    </div>
+    
+    <!-- Items -->
+    <ng-container *ngIf="pos.cart().length > 0">
+      <div *ngFor="let item of pos.cart(); let idx = index" 
+           class="cart-item fade-up" 
+           [class.selected]="idx === pos.selectedItemIdx()"
+           (click)="onSelect(idx)">
+        <span style="font-size:16px;flex-shrink:0;">{{ item.emoji }}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.name }}</div>
+          <div class="mono" style="font-size:10px;color:var(--text2);">₦{{ item.price.toLocaleString() }} × {{ item.qty }}</div>
+        </div>
+        <span *ngIf="item.discount > 0" class="tag tag-amber" style="font-size:10px;">-₦{{ item.discount.toLocaleString() }}</span>
+        <div style="text-align:right;flex-shrink:0;">
+          <div class="mono" style="font-size:12px;font-weight:700;color:var(--text);">₦{{ ((item.price * item.qty) - item.discount).toLocaleString() }}</div>
+          <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end;margin-top:3px;">
+            <button (click)="onChangeQty(idx, -1, $event)" style="width:18px;height:18px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text2);padding:0;">−</button>
+            <span class="mono" style="font-size:11px;width:20px;text-align:center;font-weight:700;">{{ item.qty }}</span>
+            <button (click)="onChangeQty(idx, 1, $event)" style="width:18px;height:18px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text2);padding:0;">+</button>
+            <button (click)="onRemove(idx, $event)" style="width:18px;height:18px;border-radius:4px;background:var(--red-dim);border:1px solid rgba(255,75,110,.2);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--red);margin-left:2px;padding:0;">✕</button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Coupon row -->
+  <div style="padding:6px 12px;border-top:1px solid var(--border);display:flex;gap:6px;background:var(--surface);flex-shrink:0;">
+    <input #couponInput class="inp" style="flex:1;font-size:12px;padding:6px 10px;" placeholder="Coupon code…">
+    <button (click)="onApplyCoupon(couponInput.value)" class="btn btn-amber btn-xs">Apply</button>
+    <span *ngIf="pos.couponCode()" class="tag tag-amber" style="align-self:center;">{{ pos.couponCode() }} applied</span>
+  </div>
+
+  <!-- Totals panel -->
+  <div style="padding:10px 14px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;">
+    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:var(--text2);">Subtotal</span>
+        <span class="mono" style="font-size:11px;">{{ fmt(pos.subtotal()) }}</span>
+      </div>
+      <div *ngIf="pos.totalDiscount() > 0" style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:var(--amber);">Discount</span>
+        <span class="mono" style="font-size:11px;color:var(--amber);">-{{ fmt(pos.totalDiscount()) }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:var(--text2);">VAT (7.5%)</span>
+        <span class="mono" style="font-size:11px;">{{ fmt(pos.vat()) }}</span>
+      </div>
+      <div class="divider" style="margin:4px 0;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:15px;font-weight:700;">TOTAL</span>
+        <span class="mono" style="font-size:22px;font-weight:700;color:var(--green);">{{ fmt(pos.grandTotal()) }}</span>
+      </div>
+    </div>
+    <button (click)="onOpenPayModal()" class="btn btn-accent" style="width:100%;justify-content:center;font-size:14px;font-weight:700;padding:11px;border-radius:8px;" [disabled]="pos.cart().length === 0">
+      Charge {{ fmt(pos.grandTotal()) }}
+    </button>
+  </div>
+</div>

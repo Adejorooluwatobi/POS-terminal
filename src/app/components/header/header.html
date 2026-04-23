@@ -1,0 +1,51 @@
+<div style="background:var(--surface);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+  <!-- Left: branding -->
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="mono" style="font-size:11px;font-weight:700;color:var(--accent);">RETAILOS</span>
+    <span style="color:var(--border2);">|</span>
+    <span class="mono" style="font-size:10px;color:var(--text3);">LG-01-T3</span>
+    <span class="tag tag-green">ONLINE</span>
+  </div>
+
+  <!-- Center: scanner bar -->
+  <div style="flex:1;max-width:340px;margin:0 auto;">
+    <div class="scanner-bar" [class.active]="isScannerFocused">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="3" x2="8" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="16" y1="3" x2="16" y2="21"/>
+      </svg>
+      <input 
+        #scannerInput
+        class="mono"
+        style="background:none;border:none;outline:none;color:var(--text);font-size:11px;width:100%;"
+        placeholder="Scan barcode or type SKU — press Enter"
+        (keydown)="handleScannerKey($event)"
+        (focus)="isScannerFocused = true"
+        (blur)="isScannerFocused = false"
+      >
+      <span class="scanner-cursor" *ngIf="false"></span>
+    </div>
+  </div>
+
+  <!-- Right: info + controls -->
+  <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+    <div class="mono" style="font-size:10px;color:var(--text3);">{{ clock() }}</div>
+    
+    <!-- Staff Badge -->
+    <div *ngIf="auth.currentStaff() as staff" style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 9px;">
+      <div [style.background]="staff.color + '22'" [style.border-color]="staff.color + '66'" [style.color]="staff.color"
+           style="width:22px;height:22px;border-radius:50%;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold;">
+        {{ staff.initials }}
+      </div>
+      <span style="font-size:11px;font-weight:600;">{{ staff.name.split(' ')[0] }}</span>
+      <span style="font-size:10px;color:var(--text3);">· {{ staff.role }}</span>
+    </div>
+
+    <button (click)="openSessionSummary()" class="btn btn-ghost btn-xs">Summary</button>
+    
+    <div class="theme-toggle" (click)="toggleTheme()" style="flex-shrink:0;">
+      <div class="knob"></div>
+    </div>
+    
+    <button (click)="confirmLogout()" class="btn btn-danger btn-xs">End Shift</button>
+  </div>
+</div>

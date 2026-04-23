@@ -1,0 +1,161 @@
+/* Tailwind is loaded via CDN in index.html */
+
+
+/* ─── CSS VARIABLES ───────────────────────────────────── */
+:root[data-theme="dark"] {
+  --bg:          #07090e;
+  --surface:     #0d1117;
+  --surface2:    #131920;
+  --surface3:    #1a2333;
+  --border:      #1e2d40;
+  --border2:     #253347;
+  --text:        #dde5f0;
+  --text2:       #8ba3bc;
+  --text3:       #4d6a84;
+  --accent:      #00c2ff;
+  --accent-dim:  rgba(0,194,255,0.08);
+  --accent-glow: rgba(0,194,255,0.18);
+  --green:       #00d68f;
+  --green-dim:   rgba(0,214,143,0.08);
+  --amber:       #f5a623;
+  --amber-dim:   rgba(245,166,35,0.08);
+  --red:         #ff4b6e;
+  --red-dim:     rgba(255,75,110,0.08);
+  --purple:      #a78bfa;
+  --scanner-bg:  #061018;
+}
+:root[data-theme="light"] {
+  --bg:          #f4f6f9;
+  --surface:     #ffffff;
+  --surface2:    #f0f3f7;
+  --surface3:    #e5eaf0;
+  --border:      #dde3ec;
+  --border2:     #c8d3df;
+  --text:        #0f1923;
+  --text2:       #4a6074;
+  --text3:       #8fa5b8;
+  --accent:      #0088cc;
+  --accent-dim:  rgba(0,136,204,0.08);
+  --accent-glow: rgba(0,136,204,0.15);
+  --green:       #00a86b;
+  --green-dim:   rgba(0,168,107,0.08);
+  --amber:       #d4860a;
+  --amber-dim:   rgba(212,134,10,0.08);
+  --red:         #e5284a;
+  --red-dim:     rgba(229,40,74,0.08);
+  --purple:      #7c3aed;
+  --scanner-bg:  #eef1f5;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; overflow:hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  transition: background .25s, color .25s;
+}
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+/* ─── UTILITY ─────────────────────────────────────────── */
+.mono { font-family:'Geist Mono',monospace; }
+.surface { background:var(--surface); }
+.surface2 { background:var(--surface2); }
+.border-c { border:1px solid var(--border); }
+.border2-c { border:1px solid var(--border2); }
+.text-muted { color:var(--text2); }
+.text-dim { color:var(--text3); }
+.text-accent { color:var(--accent); }
+.text-green { color:var(--green); }
+.text-amber { color:var(--amber); }
+.text-red { color:var(--red); }
+
+/* ─── ANIMATIONS ──────────────────────────────────────── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+@keyframes scanPulse { 0%,100%{box-shadow:0 0 0 0 var(--accent-glow)} 50%{box-shadow:0 0 0 6px transparent} }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+@keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes scanLine { 0%{top:0%} 100%{top:100%} }
+.fade-up { animation:fadeUp .18s ease forwards; }
+.slide-in { animation:slideIn .15s ease forwards; }
+
+/* ─── BUTTONS ─────────────────────────────────────────── */
+.btn { display:inline-flex; align-items:center; gap:5px; border:none; cursor:pointer; font-family:'Geist',sans-serif; font-weight:500; border-radius:7px; transition:all .12s; white-space:nowrap; }
+.btn:active { transform:scale(0.96); }
+.btn-accent { background:var(--accent); color:#000; }
+.btn-accent:hover { filter:brightness(1.1); }
+.btn-ghost { background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+.btn-ghost:hover { border-color:var(--border2); color:var(--text); }
+.btn-danger { background:var(--red-dim); color:var(--red); border:1px solid rgba(255,75,110,.2); }
+.btn-danger:hover { background:rgba(255,75,110,.14); }
+.btn-green { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,214,143,.2); }
+.btn-amber { background:var(--amber-dim); color:var(--amber); border:1px solid rgba(245,166,35,.2); }
+.btn-xs { padding:4px 9px; font-size:11px; border-radius:5px; }
+.btn-sm { padding:5px 11px; font-size:12px; }
+.btn-md { padding:7px 14px; font-size:13px; }
+
+/* ─── NUMPAD ──────────────────────────────────────────── */
+.nk { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:'Geist Mono',monospace; font-size:14px; font-weight:600; border-radius:6px; cursor:pointer; transition:all .1s; display:flex; align-items:center; justify-content:center; }
+.nk:active { background:var(--surface3); transform:scale(0.93); }
+.nk:hover { border-color:var(--border2); }
+.nk-special { background:var(--surface); color:var(--text3); font-size:11px; }
+.nk-action { background:var(--accent-dim); color:var(--accent); border-color:rgba(0,194,255,.2); font-size:11px; font-family:'Geist',sans-serif; }
+.nk-action:hover { background:rgba(0,194,255,.12); }
+
+/* ─── PRODUCT CARD ────────────────────────────────────── */
+.prod-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; cursor:pointer; transition:all .12s; padding:9px; }
+.prod-card:hover { border-color:var(--accent); background:var(--surface2); box-shadow:0 0 14px var(--accent-glow); }
+.prod-card:active { transform:scale(0.96); }
+
+/* ─── CART ITEM ───────────────────────────────────────── */
+.cart-item { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:7px; transition:background .1s; cursor:default; }
+.cart-item:hover { background:var(--surface2); }
+.cart-item.selected { background:var(--accent-dim); border-left:2px solid var(--accent); padding-left:8px; }
+
+/* ─── INPUT ───────────────────────────────────────────── */
+.inp { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:'Geist',sans-serif; font-size:12px; border-radius:7px; padding:7px 11px; outline:none; width:100%; transition:border .15s; }
+.inp:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+.inp::placeholder { color:var(--text3); }
+
+/* ─── TAG / BADGE ─────────────────────────────────────── */
+.tag { display:inline-flex; align-items:center; font-size:10px; font-weight:600; padding:2px 7px; border-radius:4px; font-family:'Geist Mono',monospace; letter-spacing:.02em; }
+.tag-green { background:var(--green-dim); color:var(--green); }
+.tag-amber { background:var(--amber-dim); color:var(--amber); }
+.tag-red { background:var(--red-dim); color:var(--red); }
+.tag-accent { background:var(--accent-dim); color:var(--accent); }
+.tag-dim { background:var(--surface3); color:var(--text3); }
+.tag-purple { background:rgba(167,139,250,.1); color:var(--purple); }
+
+/* ─── MODAL ───────────────────────────────────────────── */
+.modal-wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:60; background:rgba(0,0,0,.6); backdrop-filter:blur(5px); }
+.modal { background:var(--surface); border:1px solid var(--border2); border-radius:14px; width:100%; box-shadow:0 24px 60px rgba(0,0,0,.4); animation:fadeUp .2s ease; }
+
+/* ─── SCANNER BAR ─────────────────────────────────────── */
+.scanner-bar { background:var(--scanner-bg); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; gap:8px; padding:6px 10px; position:relative; overflow:hidden; }
+.scanner-bar.active { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); animation:scanPulse 1.5s infinite; }
+.scanner-cursor { width:1.5px; height:14px; background:var(--accent); display:inline-block; animation:blink .8s infinite; }
+.scanner-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:dot-pulse 2s infinite; }
+.scanner-dot.inactive { background:var(--text3); animation:none; }
+
+/* ─── STATUS BAR ──────────────────────────────────────── */
+.status-bar { height:2px; border-radius:1px; }
+
+/* ─── SCROLLBAR ───────────────────────────────────────── */
+.thin-scroll::-webkit-scrollbar { width:2px; }
+.thin-scroll::-webkit-scrollbar-thumb { background:var(--border2); }
+
+/* ─── DIVIDER ─────────────────────────────────────────── */
+.divider { height:1px; background:var(--border); }
+.divider-dashed { border-top:1px dashed var(--border); }
+
+/* ─── MODALS hidden by default ─────────────────────────── */
+.hidden { display:none !important; }
+
+/* ─── THEME TOGGLE ─────────────────────────────────────── */
+.theme-toggle { width:36px; height:20px; border-radius:10px; background:var(--surface3); border:1px solid var(--border2); cursor:pointer; position:relative; transition:background .2s; }
+.theme-toggle .knob { position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--text2); transition:transform .2s, background .2s; }
+[data-theme="light"] .theme-toggle .knob { transform:translateX(16px); background:var(--accent); }

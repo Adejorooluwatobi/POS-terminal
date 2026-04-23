@@ -1,0 +1,51 @@
+<div style="height:100vh;display:flex;flex-direction:column;">
+  
+  <app-header (clickSummary)="openSummaryModal()"></app-header>
+
+  <div style="flex:1;display:flex;overflow:hidden;">
+    
+    <!-- Left: Product Browser -->
+    <app-product-browser></app-product-browser>
+
+    <!-- Center: Transaction -->
+    <app-transaction-cart 
+        (clickCharge)="openPayModal()"
+        (clickCustomer)="openCustomerModal()">
+    </app-transaction-cart>
+
+    <!-- Right: Numpad + Controls -->
+    <app-numpad 
+        (clickDiscount)="openDiscModal()">
+    </app-numpad>
+
+  </div>
+
+  <!-- Modals -->
+  <app-pay-modal 
+    [isOpen]="showPayModal()" 
+    (close)="closePayModal()"
+    (paymentSuccess)="onPaymentSuccess()">
+  </app-pay-modal>
+
+  <app-receipt-modal 
+    [isOpen]="showReceiptModal()" 
+    (close)="closeReceiptModal()"
+    (newTransaction)="startNewTransaction()">
+  </app-receipt-modal>
+
+  <app-customer-modal 
+    [isOpen]="showCustomerModal()" 
+    (close)="closeCustomerModal()">
+  </app-customer-modal>
+
+  <app-disc-modal 
+    [isOpen]="showDiscModal()" 
+    (close)="closeDiscModal()">
+  </app-disc-modal>
+
+  <app-summary-modal 
+    [isOpen]="showSummaryModal()" 
+    (close)="closeSummaryModal()">
+  </app-summary-modal>
+
+</div>
