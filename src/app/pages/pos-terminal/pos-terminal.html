@@ -1,20 +1,25 @@
-<div style="height:100vh;display:flex;flex-direction:column;">
+<div style="flex:1;display:flex;flex-direction:column;width:100%;background:var(--bg);overflow:hidden;min-height:0;">
   
-  <app-header (clickSummary)="openSummaryModal()"></app-header>
+  <app-header 
+    (clickSummary)="openSummaryModal()"
+    (clickCalculator)="showCalculator.set(true)">
+  </app-header>
 
-  <div style="flex:1;display:flex;overflow:hidden;">
+  <div style="flex:1;display:flex;overflow:hidden;width:100%;min-height:0;">
     
     <!-- Left: Product Browser -->
-    <app-product-browser></app-product-browser>
+    <app-product-browser style="display:flex;flex-direction:column;flex-shrink:0;height:100%;"></app-product-browser>
 
     <!-- Center: Transaction -->
     <app-transaction-cart 
+        style="flex:1;display:flex;flex-direction:column;height:100%;"
         (clickCharge)="openPayModal()"
         (clickCustomer)="openCustomerModal()">
     </app-transaction-cart>
 
     <!-- Right: Numpad + Controls -->
     <app-numpad 
+        style="display:flex;flex-direction:column;flex-shrink:0;height:100%;"
         (clickDiscount)="openDiscModal()">
     </app-numpad>
 
@@ -47,5 +52,12 @@
     [isOpen]="showSummaryModal()" 
     (close)="closeSummaryModal()">
   </app-summary-modal>
+
+  <app-calculator 
+    [isOpen]="showCalculator()" 
+    (close)="showCalculator.set(false)">
+  </app-calculator>
+
+  <app-toast-container></app-toast-container>
 
 </div>

@@ -21,6 +21,9 @@ export class ProductBrowser {
     { id: 'beverages', name: 'Beverages' },
     { id: 'dairy', name: 'Dairy' },
     { id: 'snacks', name: 'Snacks' },
+    { id: 'electronics', name: 'Electronics' },
+    { id: 'groceries', name: 'Groceries' },
+    { id: 'clothing', name: 'Clothing' },
     { id: 'household', name: 'Household' },
     { id: 'personal', name: 'Personal Care' },
   ];

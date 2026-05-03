@@ -12,58 +12,75 @@
     </div>
 
     <!-- Login card -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
-      <!-- Staff selector -->
-      <div style="padding:16px 18px;border-bottom:1px solid var(--border);">
-        <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">Select Staff</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-          <div *ngFor="let s of auth.staffList()" 
-               (click)="auth.selectStaff(s.id)"
-               class="flex items-center gap-[6px] p-[7px] px-[9px] rounded-[7px] border border-[var(--border)] bg-[var(--surface2)] cursor-pointer transition-all duration-120 hover:border-[var(--border2)]"
-               [style.border-color]="auth.selectedStaffId() === s.id ? s.color + '88' : 'var(--border)'"
-               [style.background]="auth.selectedStaffId() === s.id ? s.color + '11' : 'var(--surface2)'">
-            <div [style.background]="s.color + '22'" [style.border-color]="s.color + '55'" [style.color]="s.color"
-                 class="w-[26px] h-[26px] rounded-full border-[1.5px] flex items-center justify-center text-[10px] font-bold shrink-0">
-              {{ s.initials }}
-            </div>
-            <div style="overflow:hidden;">
-              <div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ s.name.split(' ')[0] }}</div>
-              <div style="font-size:8px;color:var(--text3);">{{ s.role }}</div>
-            </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+      
+      <!-- Top Inputs -->
+      <div style="padding:18px;border-bottom:1px solid var(--border);background:var(--surface2);">
+        <!-- Store -->
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Store Location</label>
+          <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
+             <span style="font-size:16px;">🏪</span>
+             <div style="flex:1;">
+               <div style="font-size:13px;font-weight:700;color:var(--text);">{{ storeName() || 'Loading Store...' }}</div>
+               <div class="mono" style="font-size:9px;color:var(--text3);opacity:0.7;">ID: {{ storeId() || '...' }}</div>
+             </div>
+          </div>
+        </div>
+
+        <!-- Employee Number -->
+        <div style="position:relative;">
+          <label style="display:block;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Employee ID</label>
+          <div style="position:relative;">
+            <input 
+              [(ngModel)]="employeeNo" 
+              class="inp" 
+              style="padding-left:36px;font-size:14px;height:44px;border-radius:10px;font-weight:600;" 
+              placeholder="e.g. EMP-001"
+              autocomplete="off"
+            />
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;">👤</span>
+          </div>
+
+          <div *ngIf="employeeNo() && !isInputReady()" style="font-size:10px;color:var(--amber);font-weight:600;margin-top:6px;animation:fadeUp .2s;">
+            Please enter a valid Employee ID
+          </div>
+          <div *ngIf="isInputReady()" style="font-size:10px;color:var(--accent);font-weight:600;margin-top:6px;animation:fadeUp .2s;">
+            Ready for PIN entry
           </div>
         </div>
       </div>
 
       <!-- PIN area -->
-      <div style="padding:16px 18px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;">Enter PIN</div>
-          <div style="font-size:11px;color:var(--accent);font-weight:600;">{{ auth.getStaff(auth.selectedStaffId() || '')?.name || '' }}</div>
+      <div style="padding:24px 18px;transition:all .3s;" 
+           [style.opacity]="isInputReady() ? '1' : '0.4'" 
+           [style.pointer-events]="isInputReady() ? 'auto' : 'none'">
+        
+        <div style="display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;">Secure Access PIN</div>
         </div>
 
         <!-- PIN display -->
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div style="display:flex;gap:10px;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;gap:12px;">
             <div *ngFor="let i of [0,1,2,3]" 
                  class="pin-dot" 
-                 style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--border2);transition:all .1s;"
+                 style="width:12px;height:12px;border-radius:50%;border:2px solid var(--border2);transition:all .15s;"
                  [style.background]="pin().length > i ? 'var(--accent)' : 'transparent'"
-                 [style.border-color]="pin().length > i ? 'var(--accent)' : 'var(--border2)'">
+                 [style.border-color]="pin().length > i ? 'var(--accent)' : 'var(--border2)'"
+                 [style.box-shadow]="pin().length > i ? '0 0 10px var(--accent-glow)' : 'none'">
             </div>
           </div>
-          <div class="mono" style="font-size:18px;letter-spacing:4px;color:var(--text);flex:1;text-align:center;">
-             {{ '●'.repeat(pin().length) }}
-          </div>
-          <button (click)="pinBackspace()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;">⌫</button>
+          <button (click)="pinBackspace()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:4px;">⌫</button>
         </div>
 
         <!-- PIN numpad -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
           <div *ngFor="let d of ['1','2','3','4','5','6','7','8','9']" 
-               class="nk" style="height:38px;" (click)="pinInput(d)">{{ d }}</div>
-          <div class="nk nk-special" style="height:38px;" (click)="pinClear()">CLR</div>
-          <div class="nk" style="height:38px;" (click)="pinInput('0')">0</div>
-          <div class="nk nk-action" style="height:38px;" (click)="attemptLogin()">→</div>
+               class="nk" style="height:44px;font-size:18px;" (click)="pinInput(d)">{{ d }}</div>
+          <div class="nk nk-special" style="height:44px;font-size:12px;" (click)="pinClear()">CLR</div>
+          <div class="nk" style="height:44px;font-size:18px;" (click)="pinInput('0')">0</div>
+          <div class="nk nk-action" style="height:44px;" (click)="attemptLogin()">→</div>
         </div>
       </div>
     </div>
