@@ -1,14 +1,18 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Product, CartItem } from '../models/product.model';
 import { Customer } from '../models/customer.model';
 import { Transaction } from '../models/transaction.model';
 import { PRODUCTS, CUSTOMERS, COUPONS } from '../models/mock-data';
 import { AuthService } from './auth.service';
+import { ApiService } from './api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class POSService {
+  private api = inject(ApiService);
+  private auth = inject(AuthService);
   products = signal<Product[]>(PRODUCTS);
   customers = signal<Customer[]>(CUSTOMERS);
   cart = signal<CartItem[]>([]);
@@ -21,6 +25,8 @@ export class POSService {
   sessionRevenue = signal<number>(0);
   sessionTxCount = signal<number>(0);
   lastTx = signal<Transaction | null>(null);
+  recentScanned = signal<Product[]>([]);
+
 
   subtotal = computed(() => {
     return this.cart().reduce((s, i) => s + (i.price * i.qty) - i.discount, 0);
@@ -55,7 +61,21 @@ export class POSService {
     return afterCoupon + this.vat();
   });
 
-  constructor(private auth: AuthService) {}
+  constructor() {
+    this.fetchInitialData();
+  }
+
+  async fetchInitialData() {
+    try {
+      const prods = await firstValueFrom(this.api.get<any>('/api/products'));
+      if (prods && Array.isArray(prods)) this.products.set(prods);
+
+      const custs = await firstValueFrom(this.api.get<any>('/api/customers'));
+      if (custs && Array.isArray(custs)) this.customers.set(custs);
+    } catch (error) {
+      console.warn('Could not fetch real data, using mocks', error);
+    }
+  }
 
   addToCart(productId: number, overrideQty?: number) {
     const p = this.products().find(x => x.id === productId);
@@ -81,10 +101,19 @@ export class POSService {
     const p = this.products().find(x => x.barcode === barcode || x.sku.toLowerCase() === barcode.toLowerCase());
     if (p) {
       this.addToCart(p.id);
+      this.addToRecentScanned(p);
       return p;
     }
     return null;
   }
+
+  addToRecentScanned(p: Product) {
+    this.recentScanned.update(prev => {
+      const filtered = prev.filter(x => x.id !== p.id);
+      return [p, ...filtered].slice(0, 5);
+    });
+  }
+
 
   removeItem(idx: number) {
     this.cart.update(prev => {
@@ -143,7 +172,7 @@ export class POSService {
     });
   }
 
-  processPayment(method: any, tendered: number) {
+  async processPayment(method: any, tendered: number) {
     const staff = this.auth.currentStaff();
     if (!staff) return;
 
@@ -161,6 +190,13 @@ export class POSService {
       method: method,
       date: new Date()
     };
+
+    // Send to API
+    try {
+      await firstValueFrom(this.api.post('/api/transactions', tx));
+    } catch (error) {
+      console.error('Failed to sync transaction to cloud', error);
+    }
 
     this.lastTx.set(tx);
     this.sessionRevenue.update(s => s + tx.grand);

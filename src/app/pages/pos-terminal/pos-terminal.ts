@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Header } from '../../components/header/header';
+import { HeaderComponent } from '../../components/header/header.component';
 import { ProductBrowser } from '../../components/product-browser/product-browser';
 import { TransactionCart } from '../../components/transaction-cart/transaction-cart';
 import { Numpad } from '../../components/numpad/numpad';
@@ -9,6 +9,8 @@ import { ReceiptModal } from '../../components/receipt-modal/receipt-modal';
 import { CustomerModal } from '../../components/customer-modal/customer-modal';
 import { DiscModal } from '../../components/disc-modal/disc-modal';
 import { SummaryModal } from '../../components/summary-modal/summary-modal';
+import { ToastContainer } from '../../components/toast-container/toast-container';
+import { CalculatorComponent } from '../../components/calculator/calculator.component';
 import { POSService } from '../../services/pos.service';
 
 @Component({
@@ -16,7 +18,7 @@ import { POSService } from '../../services/pos.service';
   standalone: true,
   imports: [
     CommonModule, 
-    Header, 
+    HeaderComponent, 
     ProductBrowser, 
     TransactionCart, 
     Numpad,
@@ -24,7 +26,9 @@ import { POSService } from '../../services/pos.service';
     ReceiptModal,
     CustomerModal,
     DiscModal,
-    SummaryModal
+    SummaryModal,
+    ToastContainer,
+    CalculatorComponent
   ],
   templateUrl: './pos-terminal.html',
   styleUrl: './pos-terminal.css',
@@ -37,6 +41,7 @@ export class POSTerminal {
   showCustomerModal = signal(false);
   showDiscModal = signal(false);
   showSummaryModal = signal(false);
+  showCalculator = signal(false);
 
   openPayModal() { this.showPayModal.set(true); }
   closePayModal() { this.showPayModal.set(false); }

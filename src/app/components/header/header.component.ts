@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { POSService } from '../../services/pos.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-header',
@@ -11,16 +12,18 @@ import { POSService } from '../../services/pos.service';
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
-export class Header implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit, OnDestroy {
   auth = inject(AuthService);
   themeService = inject(ThemeService);
   pos = inject(POSService);
+  toast = inject(ToastService);
 
   isScannerFocused = false;
   clock = signal<string>('--:--:--');
   private clockInterval: any;
 
   @Output() clickSummary = new EventEmitter<void>();
+  @Output() clickCalculator = new EventEmitter<void>();
 
   ngOnInit() {
     this.startClock();
@@ -47,7 +50,12 @@ export class Header implements OnInit, OnDestroy {
       const input = e.target as HTMLInputElement;
       const val = input.value.trim();
       if (val) {
-        this.pos.processBarcode(val);
+        const p = this.pos.processBarcode(val);
+        if (p) {
+          this.toast.success(`${p.emoji} ${p.name}`);
+        } else {
+          this.toast.error(`No product found: ${val}`);
+        }
       }
       input.value = '';
     }

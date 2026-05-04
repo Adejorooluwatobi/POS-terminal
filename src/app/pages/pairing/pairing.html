@@ -1,0 +1,59 @@
+<div class="fixed inset-0 flex items-center justify-center" style="background:var(--bg);">
+  <div style="width:360px;">
+    
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:6px 16px;margin-bottom:20px;">
+        <span class="scanner-dot" [class.inactive]="!terminalService.isPaired()"></span>
+        <span class="mono" style="font-size:11px;color:var(--text3);letter-spacing:.05em;">DEVICE PAIRING</span>
+      </div>
+      <h1 style="font-size:28px;font-weight:800;letter-spacing:-.03em;color:var(--text);margin-bottom:8px;">Link This Terminal</h1>
+      <p style="font-size:13px;color:var(--text2);line-height:1.5;">Enter the 6-digit pairing code shown in your <span style="color:var(--accent);font-weight:600;">Admin Portal</span> to activate this device.</p>
+    </div>
+
+    <!-- Pairing Card -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+      
+      <!-- Code Display -->
+      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:24px;">
+        <div *ngFor="let i of [0,1,2,3,4,5]" 
+             style="width:42px;height:52px;background:var(--surface2);border:2px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;transition:all .15s;"
+             [style.border-color]="pairingCode().length === i ? 'var(--accent)' : (pairingCode().length > i ? 'var(--border2)' : 'var(--border)')"
+             [style.box-shadow]="pairingCode().length === i ? '0 0 15px var(--accent-glow)' : 'none'">
+          <span class="mono" style="font-size:24px;font-weight:700;color:var(--text);">
+            {{ pairingCode()[i] || '' }}
+          </span>
+          <div *ngIf="pairingCode().length === i" class="scanner-cursor" style="height:20px;width:2px;background:var(--accent);"></div>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="error()" style="background:var(--red-dim);border:1px solid rgba(255,75,110,0.2);border-radius:8px;padding:10px;margin-bottom:20px;text-align:center;animation:fadeUp .2s ease;">
+        <p style="font-size:11px;color:var(--red);font-weight:500;">{{ error() }}</p>
+      </div>
+
+      <!-- Numpad -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        <button *ngFor="let d of ['1','2','3','4','5','6','7','8','9']" 
+                class="nk" style="height:48px;font-size:18px;" 
+                (click)="inputDigit(d)"
+                [disabled]="isSubmitting()">
+          {{ d }}
+        </button>
+        <button class="nk nk-special" style="height:48px;" (click)="pairingCode.set('')" [disabled]="isSubmitting()">CLR</button>
+        <button class="nk" style="height:48px;font-size:18px;" (click)="inputDigit('0')" [disabled]="isSubmitting()">0</button>
+        <button class="nk nk-special" style="height:48px;" (click)="backspace()" [disabled]="isSubmitting()">⌫</button>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center;margin-top:24px;">
+      <p style="font-size:11px;color:var(--text3);margin-bottom:12px;">Need help? Contact support or check documentation.</p>
+      <div class="theme-toggle" style="margin:0 auto;" (click)="themeService.toggleTheme()">
+        <div class="knob"></div>
+      </div>
+    </div>
+
+  </div>
+</div>

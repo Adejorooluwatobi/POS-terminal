@@ -48,7 +48,8 @@
 }
 
 * { box-sizing:border-box; margin:0; padding:0; }
-html,body { height:100%; overflow:hidden; }
+html,body { height:100%; width:100%; margin:0; padding:0; overflow:hidden; }
+app-root { display: flex !important; flex-direction: column; height: 100vh; width: 100vw; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -74,8 +75,11 @@ body {
 .text-red { color:var(--red); }
 
 /* ─── ANIMATIONS ──────────────────────────────────────── */
-@keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
 @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+@keyframes scaleIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+@keyframes cartBounce { 0%{transform:scale(1)} 50%{transform:scale(1.02)} 100%{transform:scale(1)} }
 @keyframes scanPulse { 0%,100%{box-shadow:0 0 0 0 var(--accent-glow)} 50%{box-shadow:0 0 0 6px transparent} }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 @keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
@@ -131,8 +135,9 @@ body {
 .tag-purple { background:rgba(167,139,250,.1); color:var(--purple); }
 
 /* ─── MODAL ───────────────────────────────────────────── */
-.modal-wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:60; background:rgba(0,0,0,.6); backdrop-filter:blur(5px); }
-.modal { background:var(--surface); border:1px solid var(--border2); border-radius:14px; width:100%; box-shadow:0 24px 60px rgba(0,0,0,.4); animation:fadeUp .2s ease; }
+.modal-wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:60; background:rgba(0,0,0,.4); backdrop-filter:blur(8px); animation: fadeIn 0.2s ease; }
+.modal { background:var(--surface); border:1px solid var(--border2); border-radius:14px; width:100%; box-shadow:0 24px 60px rgba(0,0,0,.5); animation:fadeUp .3s cubic-bezier(0.16, 1, 0.3, 1); position: relative; overflow: hidden; }
+.modal::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); }
 
 /* ─── SCANNER BAR ─────────────────────────────────────── */
 .scanner-bar { background:var(--scanner-bg); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; gap:8px; padding:6px 10px; position:relative; overflow:hidden; }
@@ -159,3 +164,37 @@ body {
 .theme-toggle { width:36px; height:20px; border-radius:10px; background:var(--surface3); border:1px solid var(--border2); cursor:pointer; position:relative; transition:background .2s; }
 .theme-toggle .knob { position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--text2); transition:transform .2s, background .2s; }
 [data-theme="light"] .theme-toggle .knob { transform:translateX(16px); background:var(--accent); }
+
+/* ─── PREMIUM EFFECTS ─────────────────────────────────── */
+.glass {
+  background: rgba(13, 17, 23, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.glass-light {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px var(--accent-glow);
+  border-color: var(--accent);
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.click-scale:active {
+  transform: scale(0.97);
+}
