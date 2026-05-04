@@ -27,8 +27,10 @@ export class POSService {
   heldTxs = signal<any[]>([]);
   selectedItemIdx = signal<number>(-1);
   numBuffer = signal<string>('');
-  couponCode = signal<string>('');
-  coupons = signal<Record<string, Coupon>>({});
+  
+  // Promotion State
+  appliedPromo = signal<{code: string, amount: number, promotionId?: string} | null>(null);
+
   currentCustomer = signal<Customer | null>(null);
   txCounter = signal<number>(1);
   sessionRevenue = signal<number>(0);
@@ -55,12 +57,8 @@ export class POSService {
   });
 
   couponDiscount = computed(() => {
-    const code = this.couponCode();
-    if (!code) return 0;
-    const c = this.coupons()[code];
-    if (!c) return 0;
-    const sub = this.cart().reduce((s, i) => s + (i.price * i.qty), 0);
-    return c.type === 'pct' ? sub * (c.val / 100) : Math.min(c.val, sub);
+    const promo = this.appliedPromo();
+    return promo ? promo.amount : 0;
   });
 
   totalDiscount = computed(() => this.itemTotalDiscount() + this.couponDiscount());
@@ -102,18 +100,6 @@ export class POSService {
         if (custs && Array.isArray(custs)) this.customers.set(custs);
       } catch (e) {
         console.warn('Failed to fetch customers:', e);
-      }
-
-      // Fetch Coupons (Handle 404 gracefully)
-      try {
-        const coups = await firstValueFrom(this.couponService.getCoupons());
-        if (coups && Array.isArray(coups)) {
-          const dict: Record<string, Coupon> = {};
-          coups.forEach(c => dict[c.code] = c);
-          this.coupons.set(dict);
-        }
-      } catch (e) {
-        console.warn('Coupons endpoint not available (404 expected if not implemented)');
       }
     } catch (error) {
       console.error('General data fetch error:', error);
@@ -182,19 +168,10 @@ export class POSService {
 
   clearCart() {
     this.cart.set([]);
-    this.couponCode.set('');
+    this.appliedPromo.set(null);
     this.currentCustomer.set(null);
     this.selectedItemIdx.set(-1);
     this.numBuffer.set('');
-  }
-
-  applyCoupon(code: string): boolean {
-    const c = this.coupons()[code.toUpperCase()];
-    if (c) {
-      this.couponCode.set(code.toUpperCase());
-      return true;
-    }
-    return false;
   }
 
   assignCustomer(id: number) {
@@ -208,7 +185,7 @@ export class POSService {
       id: `HOLD-${Date.now()}`,
       items: [...this.cart()],
       customer: this.currentCustomer(),
-      couponCode: this.couponCode(),
+      appliedPromo: this.appliedPromo(),
       txNum: `LG01-${String(this.txCounter()).padStart(3, '0')}`
     };
     this.heldTxs.update(h => [...h, held]);
@@ -219,7 +196,7 @@ export class POSService {
     const h = this.heldTxs()[idx];
     this.cart.set(h.items);
     this.currentCustomer.set(h.customer);
-    this.couponCode.set(h.couponCode);
+    this.appliedPromo.set(h.appliedPromo);
     this.heldTxs.update(prev => {
       const next = [...prev];
       next.splice(idx, 1);
@@ -243,6 +220,7 @@ export class POSService {
       tender: tendered,
       change: Math.max(0, tendered - this.grandTotal()),
       method: method,
+      promotionId: this.appliedPromo()?.promotionId,
       date: new Date()
     };
 

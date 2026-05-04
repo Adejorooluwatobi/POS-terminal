@@ -38,9 +38,6 @@ export class TransactionCart {
     this.pos.removeItem(idx);
   }
 
-  onApplyCoupon(code: string) {
-    this.pos.applyCoupon(code);
-  }
 
   onVoid() {
     if (confirm('Void this transaction? This will be logged.')) {

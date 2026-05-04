@@ -25,6 +25,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   @Output() clickSummary = new EventEmitter<void>();
   @Output() clickCalculator = new EventEmitter<void>();
+  @Output() clickGiftCard = new EventEmitter<void>();
 
   ngOnInit() {
     this.startClock();

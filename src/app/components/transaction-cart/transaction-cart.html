@@ -60,11 +60,17 @@
     </ng-container>
   </div>
 
-  <!-- Coupon row -->
-  <div style="padding:6px 12px;border-top:1px solid var(--border);display:flex;gap:6px;background:var(--surface);flex-shrink:0;">
-    <input #couponInput class="inp" style="flex:1;font-size:12px;padding:6px 10px;" placeholder="Coupon code…">
-    <button (click)="onApplyCoupon(couponInput.value)" class="btn btn-amber btn-xs">Apply</button>
-    <span *ngIf="pos.couponCode()" class="tag tag-amber" style="align-self:center;">{{ pos.couponCode() }} applied</span>
+  <!-- Promo row -->
+  <div *ngIf="pos.appliedPromo() as promo" style="padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--accent-d);flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-size:16px;">🏷️</span>
+      <span class="mono" style="font-size:12px;font-weight:700;color:var(--accent);">{{ promo.code }}</span>
+      <span style="font-size:11px;color:var(--text2);">applied</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="mono" style="font-size:12px;font-weight:700;color:var(--accent);">-₦{{ promo.amount.toLocaleString() }}</span>
+      <button (click)="pos.appliedPromo.set(null)" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0 4px;">&times;</button>
+    </div>
   </div>
 
   <!-- Totals panel -->

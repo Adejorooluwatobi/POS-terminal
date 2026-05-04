@@ -14,11 +14,7 @@ export interface Coupon {
 export class CouponService {
   private api = inject(ApiService);
 
-  getCoupons(): Observable<Coupon[]> {
-    return this.api.get<Coupon[]>('/api/coupons');
-  }
-
-  getCouponByCode(code: string): Observable<Coupon> {
-    return this.api.get<Coupon>(`/api/coupons/${code}`);
+  validatePromoCode(code: string, cartAmount: number): Observable<any> {
+    return this.api.get<any>(`/api/promotions/validate/${code}?cartAmount=${cartAmount}`);
   }
 }

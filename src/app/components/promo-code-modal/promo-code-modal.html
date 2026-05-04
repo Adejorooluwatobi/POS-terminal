@@ -1,0 +1,37 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="closeModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-title">
+        <span class="icon">🏷️</span>
+        Promo Code
+      </div>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="input-group">
+        <label>Enter Code</label>
+        <input 
+          type="text" 
+          [(ngModel)]="promoCode" 
+          placeholder="e.g. SUMMER2024"
+          class="promo-input"
+          [disabled]="isValidating()">
+      </div>
+
+      <div class="info-box">
+        Global and store-specific codes are accepted.
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button 
+        class="btn btn-primary" 
+        (click)="onApply()" 
+        [disabled]="!promoCode() || isValidating()">
+        {{ isValidating() ? 'Validating...' : 'Apply Code' }}
+      </button>
+    </div>
+  </div>
+</div>

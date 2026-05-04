@@ -1,0 +1,42 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="closeModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-title">
+        <span class="icon">💳</span>
+        Gift Card Sale
+      </div>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="card-display">
+        <div class="card-number-label">Generated Card Number</div>
+        <div class="card-number-val mono">{{ cardNumber() }}</div>
+        <div class="card-pin-val">PIN: {{ pin() }}</div>
+      </div>
+
+      <div class="input-group">
+        <label>Load Amount (₦)</label>
+        <input 
+          type="number" 
+          [(ngModel)]="amount" 
+          placeholder="0.00"
+          class="amount-input">
+      </div>
+
+      <div class="info-note">
+        This card will be activated once the payment is completed.
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button 
+        class="btn btn-primary" 
+        (click)="onAddToCart()" 
+        [disabled]="amount() <= 0">
+        Add to Cart
+      </button>
+    </div>
+  </div>
+</div>
