@@ -2,9 +2,13 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { Product, CartItem } from '../models/product.model';
 import { Customer } from '../models/customer.model';
 import { Transaction } from '../models/transaction.model';
-import { PRODUCTS, CUSTOMERS, COUPONS } from '../models/mock-data';
+// Mock data removed in favor of services
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
+import { ProductService } from './product.service';
+import { CustomerService } from './customer.service';
+import { TransactionService } from './transaction.service';
+import { CouponService, Coupon } from './coupon.service';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -13,19 +17,35 @@ import { firstValueFrom } from 'rxjs';
 export class POSService {
   private api = inject(ApiService);
   private auth = inject(AuthService);
-  products = signal<Product[]>(PRODUCTS);
-  customers = signal<Customer[]>(CUSTOMERS);
+  private productService = inject(ProductService);
+  private customerService = inject(CustomerService);
+  private transactionService = inject(TransactionService);
+  private couponService = inject(CouponService);
+  products = signal<Product[]>([]);
+  customers = signal<Customer[]>([]);
   cart = signal<CartItem[]>([]);
   heldTxs = signal<any[]>([]);
   selectedItemIdx = signal<number>(-1);
   numBuffer = signal<string>('');
-  couponCode = signal<string>('');
+  
+  // Promotion State
+  appliedPromo = signal<{code: string, amount: number, promotionId?: string} | null>(null);
+
   currentCustomer = signal<Customer | null>(null);
   txCounter = signal<number>(1);
   sessionRevenue = signal<number>(0);
   sessionTxCount = signal<number>(0);
   lastTx = signal<Transaction | null>(null);
   recentScanned = signal<Product[]>([]);
+  customerName = computed(() => {
+    const c = this.currentCustomer();
+    if (!c || !c.name) return 'Walk-in';
+    try {
+      return c.name.split(' ')[0] || 'Walk-in';
+    } catch (e) {
+      return 'Walk-in';
+    }
+  });
 
 
   subtotal = computed(() => {
@@ -37,12 +57,8 @@ export class POSService {
   });
 
   couponDiscount = computed(() => {
-    const code = this.couponCode();
-    if (!code) return 0;
-    const c = COUPONS[code];
-    if (!c) return 0;
-    const sub = this.cart().reduce((s, i) => s + (i.price * i.qty), 0);
-    return c.type === 'pct' ? sub * (c.val / 100) : Math.min(c.val, sub);
+    const promo = this.appliedPromo();
+    return promo ? promo.amount : 0;
   });
 
   totalDiscount = computed(() => this.itemTotalDiscount() + this.couponDiscount());
@@ -66,14 +82,27 @@ export class POSService {
   }
 
   async fetchInitialData() {
-    try {
-      const prods = await firstValueFrom(this.api.get<any>('/api/products'));
-      if (prods && Array.isArray(prods)) this.products.set(prods);
+    // Add a tiny delay to ensure the component tree is stable before signals start updating
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-      const custs = await firstValueFrom(this.api.get<any>('/api/customers'));
-      if (custs && Array.isArray(custs)) this.customers.set(custs);
+    try {
+      // Fetch Products
+      try {
+        const prods = await firstValueFrom(this.productService.getProducts());
+        if (prods && Array.isArray(prods)) this.products.set(prods);
+      } catch (e) {
+        console.warn('Failed to fetch products:', e);
+      }
+
+      // Fetch Customers
+      try {
+        const custs = await firstValueFrom(this.customerService.getCustomers());
+        if (custs && Array.isArray(custs)) this.customers.set(custs);
+      } catch (e) {
+        console.warn('Failed to fetch customers:', e);
+      }
     } catch (error) {
-      console.warn('Could not fetch real data, using mocks', error);
+      console.error('General data fetch error:', error);
     }
   }
 
@@ -97,8 +126,19 @@ export class POSService {
     this.selectedItemIdx.set(this.cart().length - 1);
   }
 
-  processBarcode(barcode: string): Product | null {
-    const p = this.products().find(x => x.barcode === barcode || x.sku.toLowerCase() === barcode.toLowerCase());
+  async processBarcode(barcode: string): Promise<Product | null> {
+    // 1. Try local cache first
+    let p = this.products().find(x => x.barcode === barcode || x.sku.toLowerCase() === barcode.toLowerCase());
+    
+    if (!p) {
+      // 2. Try API lookup by barcode
+      try {
+        p = await firstValueFrom(this.productService.getProductByBarcode(barcode));
+      } catch (error) {
+        console.warn('Barcode not found in API:', barcode);
+      }
+    }
+
     if (p) {
       this.addToCart(p.id);
       this.addToRecentScanned(p);
@@ -128,18 +168,10 @@ export class POSService {
 
   clearCart() {
     this.cart.set([]);
-    this.couponCode.set('');
+    this.appliedPromo.set(null);
     this.currentCustomer.set(null);
     this.selectedItemIdx.set(-1);
     this.numBuffer.set('');
-  }
-
-  applyCoupon(code: string): boolean {
-    if (COUPONS[code.toUpperCase()]) {
-      this.couponCode.set(code.toUpperCase());
-      return true;
-    }
-    return false;
   }
 
   assignCustomer(id: number) {
@@ -153,7 +185,7 @@ export class POSService {
       id: `HOLD-${Date.now()}`,
       items: [...this.cart()],
       customer: this.currentCustomer(),
-      couponCode: this.couponCode(),
+      appliedPromo: this.appliedPromo(),
       txNum: `LG01-${String(this.txCounter()).padStart(3, '0')}`
     };
     this.heldTxs.update(h => [...h, held]);
@@ -164,7 +196,7 @@ export class POSService {
     const h = this.heldTxs()[idx];
     this.cart.set(h.items);
     this.currentCustomer.set(h.customer);
-    this.couponCode.set(h.couponCode);
+    this.appliedPromo.set(h.appliedPromo);
     this.heldTxs.update(prev => {
       const next = [...prev];
       next.splice(idx, 1);
@@ -188,12 +220,13 @@ export class POSService {
       tender: tendered,
       change: Math.max(0, tendered - this.grandTotal()),
       method: method,
+      promotionId: this.appliedPromo()?.promotionId,
       date: new Date()
     };
 
     // Send to API
     try {
-      await firstValueFrom(this.api.post('/api/transactions', tx));
+      await firstValueFrom(this.transactionService.createTransaction(tx));
     } catch (error) {
       console.error('Failed to sync transaction to cloud', error);
     }

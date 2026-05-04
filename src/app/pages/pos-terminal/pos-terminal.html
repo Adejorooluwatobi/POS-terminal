@@ -2,7 +2,8 @@
   
   <app-header 
     (clickSummary)="openSummaryModal()"
-    (clickCalculator)="showCalculator.set(true)">
+    (clickCalculator)="showCalculator.set(true)"
+    (clickGiftCard)="openGiftCardModal()">
   </app-header>
 
   <div style="flex:1;display:flex;overflow:hidden;width:100%;min-height:0;">
@@ -20,7 +21,8 @@
     <!-- Right: Numpad + Controls -->
     <app-numpad 
         style="display:flex;flex-direction:column;flex-shrink:0;height:100%;"
-        (clickDiscount)="openDiscModal()">
+        (clickDiscount)="openDiscModal()"
+        (clickPromo)="openPromoModal()">
     </app-numpad>
 
   </div>
@@ -47,6 +49,16 @@
     [isOpen]="showDiscModal()" 
     (close)="closeDiscModal()">
   </app-disc-modal>
+
+  <app-promo-code-modal 
+    [isOpen]="showPromoModal()" 
+    (close)="closePromoModal()">
+  </app-promo-code-modal>
+
+  <app-gift-card-sale-modal 
+    [isOpen]="showGiftCardModal()" 
+    (close)="closeGiftCardModal()">
+  </app-gift-card-sale-modal>
 
   <app-summary-modal 
     [isOpen]="showSummaryModal()" 

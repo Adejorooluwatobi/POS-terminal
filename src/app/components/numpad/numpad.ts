@@ -13,6 +13,7 @@ export class Numpad {
   pos = inject(POSService);
 
   @Output() clickDiscount = new EventEmitter<void>();
+  @Output() clickPromo = new EventEmitter<void>();
 
   digits = ['7', '8', '9', '4', '5', '6', '1', '2', '3'];
 
@@ -41,6 +42,10 @@ export class Numpad {
 
   onManualDiscount() {
     this.clickDiscount.emit();
+  }
+
+  onPromoCode() {
+    this.clickPromo.emit();
   }
 
   onRemoveItem() {

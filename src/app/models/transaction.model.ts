@@ -14,5 +14,6 @@ export interface Transaction {
   tender: number;
   change: number;
   method: 'CASH' | 'CARD' | 'MOBILE' | 'SPLIT';
+  promotionId?: string;
   date: Date;
 }

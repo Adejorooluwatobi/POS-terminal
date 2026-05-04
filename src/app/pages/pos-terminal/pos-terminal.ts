@@ -8,6 +8,8 @@ import { PayModal } from '../../components/pay-modal/pay-modal';
 import { ReceiptModal } from '../../components/receipt-modal/receipt-modal';
 import { CustomerModal } from '../../components/customer-modal/customer-modal';
 import { DiscModal } from '../../components/disc-modal/disc-modal';
+import { PromoCodeModal } from '../../components/promo-code-modal/promo-code-modal';
+import { GiftCardSaleModal } from '../../components/gift-card-sale-modal/gift-card-sale-modal';
 import { SummaryModal } from '../../components/summary-modal/summary-modal';
 import { ToastContainer } from '../../components/toast-container/toast-container';
 import { CalculatorComponent } from '../../components/calculator/calculator.component';
@@ -26,6 +28,8 @@ import { POSService } from '../../services/pos.service';
     ReceiptModal,
     CustomerModal,
     DiscModal,
+    PromoCodeModal,
+    GiftCardSaleModal,
     SummaryModal,
     ToastContainer,
     CalculatorComponent
@@ -40,6 +44,8 @@ export class POSTerminal {
   showReceiptModal = signal(false);
   showCustomerModal = signal(false);
   showDiscModal = signal(false);
+  showPromoModal = signal(false);
+  showGiftCardModal = signal(false);
   showSummaryModal = signal(false);
   showCalculator = signal(false);
 
@@ -59,6 +65,12 @@ export class POSTerminal {
 
   openDiscModal() { this.showDiscModal.set(true); }
   closeDiscModal() { this.showDiscModal.set(false); }
+
+  openPromoModal() { this.showPromoModal.set(true); }
+  closePromoModal() { this.showPromoModal.set(false); }
+
+  openGiftCardModal() { this.showGiftCardModal.set(true); }
+  closeGiftCardModal() { this.showGiftCardModal.set(false); }
 
   openSummaryModal() { this.showSummaryModal.set(true); }
   closeSummaryModal() { this.showSummaryModal.set(false); }
