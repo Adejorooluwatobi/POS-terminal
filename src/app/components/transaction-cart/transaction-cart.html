@@ -13,7 +13,7 @@
       <!-- Customer -->
       <button (click)="onOpenCustomerModal()" class="btn btn-ghost btn-xs">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0116 0"/></svg>
-        <span>{{ (pos.currentCustomer()?.name ?? '').split(' ')[0] || 'Walk-in' }}</span>
+        <span>{{ customerName() }}</span>
       </button>
       <button (click)="pos.holdTransaction()" class="btn btn-ghost btn-xs">Hold</button>
       <button (click)="onVoid()" class="btn btn-danger btn-xs">Void TX</button>

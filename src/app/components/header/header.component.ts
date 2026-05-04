@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, signal, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { POSService } from '../../services/pos.service';
@@ -45,12 +46,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.clockInterval = setInterval(tick, 1000);
   }
 
-  handleScannerKey(e: KeyboardEvent) {
+  async handleScannerKey(e: KeyboardEvent) {
     if (e.key === 'Enter') {
       const input = e.target as HTMLInputElement;
       const val = input.value.trim();
       if (val) {
-        const p = this.pos.processBarcode(val);
+        const p = await this.pos.processBarcode(val);
         if (p) {
           this.toast.success(`${p.emoji} ${p.name}`);
         } else {
@@ -65,9 +66,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.themeService.toggleTheme();
   }
 
+  private router = inject(Router);
+
   confirmLogout() {
     if (confirm(`Close till and end shift for ${this.auth.currentStaff()?.name}?`)) {
-      location.reload();
+      this.auth.logout();
+      this.router.navigate(['/login']);
     }
   }
 

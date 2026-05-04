@@ -11,6 +11,7 @@ import { POSService } from '../../services/pos.service';
 })
 export class TransactionCart {
   pos = inject(POSService);
+  customerName = this.pos.customerName;
 
   @Output() clickCharge = new EventEmitter<void>();
   @Output() clickCustomer = new EventEmitter<void>();

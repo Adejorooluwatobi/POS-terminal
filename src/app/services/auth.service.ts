@@ -1,7 +1,8 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Staff } from '../models/staff.model';
-import { STAFF_LIST } from '../models/mock-data';
+// Mock data removed
 import { ApiService } from './api.service';
+import { StaffService } from './staff.service';
 import { tap } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 
@@ -10,12 +11,37 @@ import { firstValueFrom } from 'rxjs';
 })
 export class AuthService {
   private api = inject(ApiService);
+  private staffService = inject(StaffService);
   
-  staffList = signal<Staff[]>(STAFF_LIST);
+  staffList = signal<Staff[]>([]);
   currentStaff = signal<Staff | null>(null);
   selectedStaffId = signal<string | null>(null);
 
-  constructor() {}
+  constructor() {
+    this.restoreSession();
+    this.fetchStaff();
+  }
+
+  async fetchStaff() {
+    try {
+      const list = await firstValueFrom(this.staffService.getStaffList());
+      if (list && Array.isArray(list)) this.staffList.set(list);
+    } catch (e) {
+      console.warn('Could not fetch staff from API');
+    }
+  }
+
+  private restoreSession() {
+    const saved = localStorage.getItem('currentStaff');
+    if (saved) {
+      try {
+        this.currentStaff.set(JSON.parse(saved));
+      } catch (e) {
+        localStorage.removeItem('currentStaff');
+        localStorage.removeItem('pos_token');
+      }
+    }
+  }
 
   selectStaff(id: string) {
     this.selectedStaffId.set(id);
@@ -45,6 +71,7 @@ export class AuthService {
       console.log('Login response:', res);
       
       if (res && res.token) {
+        localStorage.setItem('pos_token', res.token);
         // Map API response to Staff model
         const staff: Staff = {
           id: id,
@@ -56,6 +83,7 @@ export class AuthService {
           color: '#00c2ff'
         };
         this.currentStaff.set(staff);
+        localStorage.setItem('currentStaff', JSON.stringify(staff));
         return true;
       }
     } catch (error) {
@@ -68,5 +96,7 @@ export class AuthService {
   logout() {
     this.currentStaff.set(null);
     this.selectedStaffId.set(null);
+    localStorage.removeItem('currentStaff');
+    localStorage.removeItem('pos_token');
   }
 }
