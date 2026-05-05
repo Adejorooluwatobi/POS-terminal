@@ -10,9 +10,22 @@
 
     <div class="modal-body">
       <div class="card-display">
-        <div class="card-number-label">Generated Card Number</div>
-        <div class="card-number-val mono">{{ cardNumber() }}</div>
-        <div class="card-pin-val">PIN: {{ pin() }}</div>
+        <div class="card-number-label">Card Number (Scan or Type)</div>
+        <input 
+          type="text" 
+          [(ngModel)]="cardNumber" 
+          class="card-number-input mono" 
+          style="width: 100%; background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 4px; font-size: 1.2rem; text-align: center; margin-bottom: 10px;">
+        <div class="card-pin-display">System Generated PIN: {{ pin() }}</div>
+      </div>
+
+      <div class="input-group">
+        <label>PIN (Cashier can set custom)</label>
+        <input 
+          type="text" 
+          [(ngModel)]="pin" 
+          placeholder="4-digit PIN"
+          class="pin-input mono">
       </div>
 
       <div class="input-group">

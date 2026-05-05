@@ -65,9 +65,16 @@ export class PayModal {
   }
 
   async redeemGiftCard() {
+    const storeId = localStorage.getItem('store_id');
+    if (!storeId) {
+      this.toast.error('Terminal not paired with a store. Please pair first.');
+      return;
+    }
+
     if (!this.gcNumber() || this.gcAmount() <= 0) return;
     
     this.isRedeeming.set(true);
+    console.log('Redeeming gift card for store:', storeId);
     try {
       const amountToRedeem = this.gcAmount();
       await firstValueFrom(this.gcService.redeem(this.gcNumber(), amountToRedeem, this.gcPin()));
@@ -90,14 +97,14 @@ export class PayModal {
     }
   }
 
-  processPayment() {
+  async processPayment() {
     const g = this.pos.grandTotal();
     if (this.payMethod() === 'CASH' && this.tendered() < g) {
       alert('Amount tendered is insufficient');
       return;
     }
 
-    this.pos.processPayment(this.payMethod(), this.tendered());
+    await this.pos.processPayment(this.payMethod(), this.tendered());
     this.paymentSuccess.emit();
     this.closeModal();
   }

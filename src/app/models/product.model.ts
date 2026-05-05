@@ -1,5 +1,6 @@
 export interface Product {
   id: string | number;
+  variantId?: string; // backend UUID for the product variant, used in transactions
   name: string;
   sku: string;
   barcode: string;

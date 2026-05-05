@@ -7,13 +7,16 @@ export interface Transaction {
   items: CartItem[];
   customer: Customer | null;
   staff: Staff;
+  storeId?: string;
   subtotal: number;
   couponDisc: number;
+  giftCardDisc?: number;
   vat: number;
   grand: number;
   tender: number;
   change: number;
-  method: 'CASH' | 'CARD' | 'MOBILE' | 'SPLIT';
+  method: 'CASH' | 'CARD' | 'MOBILE' | 'SPLIT' | 'GIFTCARD';
   promotionId?: string;
+  redeemedGiftCards?: any[];
   date: Date;
 }

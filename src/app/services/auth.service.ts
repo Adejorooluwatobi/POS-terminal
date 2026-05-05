@@ -79,7 +79,7 @@ export class AuthService {
           initials: (res.name || 'S').split(' ').map((n:any)=>n[0]).join(''),
           role: (res.role || 'CASHIER').toUpperCase() as any,
           pin: pin,
-          store: res.storeId || sId,
+          store: localStorage.getItem('store_id') || res.storeId || sId,
           color: '#00c2ff'
         };
         this.currentStaff.set(staff);

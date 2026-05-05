@@ -13,11 +13,41 @@ export class TransactionService {
     return this.api.get<Transaction[]>('/api/transactions');
   }
 
-  createTransaction(transaction: Transaction): Observable<Transaction> {
-    return this.api.post<Transaction>('/api/transactions', transaction);
-  }
-
   getTransactionById(id: string): Observable<Transaction> {
     return this.api.get<Transaction>(`/api/transactions/${id}`);
+  }
+
+  /**
+   * Maps a frontend transaction (from POSService) to the backend CreateTransactionDto
+   * and posts it to the API.
+   */
+  createTransaction(tx: Transaction): Observable<Transaction> {
+    const storeId = localStorage.getItem('store_id') || tx.storeId || tx.staff?.store || '';
+    const sessionId = localStorage.getItem('till_session_id') || '00000000-0000-0000-0000-000000000001';
+
+    // Validate StoreId is not empty or Guid.Empty
+    if (!storeId || storeId === '00000000-0000-0000-0000-000000000000') {
+      console.error('CRITICAL: Attempting to create transaction with empty StoreId');
+    }
+
+    const items = (tx.items || []).map((item: any) => ({
+      variantId: item.variantId || item.id,
+      quantity: item.qty,
+      unitPrice: item.price,
+      taxRate: item.tax || 0
+    }));
+
+    const payload = {
+      storeId,
+      sessionId,
+      customerId: tx.customer?.id || null,
+      type: 'Sale',
+      notes: tx.promotionId ? `Promo: ${tx.promotionId}` : null,
+      items
+    };
+
+    console.log('Syncing transaction to cloud:', payload);
+
+    return this.api.post<Transaction>('/api/transactions', payload);
   }
 }

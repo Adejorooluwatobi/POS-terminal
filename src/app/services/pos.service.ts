@@ -218,32 +218,39 @@ export class POSService {
     const staff = this.auth.currentStaff();
     if (!staff) return;
 
+    const storeId = localStorage.getItem('store_id') || staff.store || '';
+
     const tx: Transaction = {
       txNum: `LG01-${String(this.txCounter()).padStart(3, '0')}`,
       items: [...this.cart()],
       customer: this.currentCustomer(),
       staff: staff,
+      storeId,
       subtotal: this.subtotal(),
       couponDisc: this.couponDiscount(),
+      giftCardDisc: this.giftCardDiscount(),
       vat: this.vat(),
       grand: this.grandTotal(),
       tender: tendered,
       change: Math.max(0, tendered - this.grandTotal()),
       method: method,
       promotionId: this.appliedPromo()?.promotionId,
+      redeemedGiftCards: this.redeemedGiftCards(),
       date: new Date()
     };
 
-    // Send to API
+    // Send to API — log but don't block local receipt on failure
     try {
       await firstValueFrom(this.transactionService.createTransaction(tx));
-    } catch (error) {
-      console.error('Failed to sync transaction to cloud', error);
+      console.log('Transaction synced to cloud successfully');
+    } catch (error: any) {
+      console.error('Failed to sync transaction to cloud', error?.error || error);
     }
 
     this.lastTx.set(tx);
     this.sessionRevenue.update(s => s + tx.grand);
     this.sessionTxCount.update(s => s + 1);
     this.txCounter.update(c => c + 1);
+    this.clearCart();
   }
 }
