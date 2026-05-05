@@ -42,9 +42,13 @@
       </div>
       <!-- Card/Mobile section -->
       <div *ngIf="payMethod() === 'CARD' || payMethod() === 'MOBILE'" style="text-align:center;padding:20px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;">
-        <div style="font-size:28px;margin-bottom:8px;">{{ payMethod() === 'CARD' ? '💳' : '🏦' }}</div>
-        <div style="font-size:12px;color:var(--text2);">{{ payMethod() === 'CARD' ? 'Present card to terminal' : 'Awaiting confirmation of bank transfer...' }}</div>
-        <div class="mono" style="font-size:10px;color:var(--text3);margin-top:4px;">Awaiting gateway…</div>
+        <div style="font-size:32px;margin-bottom:12px;">{{ payMethod() === 'CARD' ? '💳' : '🏦' }}</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">
+          {{ payMethod() === 'CARD' ? 'Card Payment' : 'Bank Transfer' }}
+        </div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.4;">
+          {{ payMethod() === 'CARD' ? 'Process the payment on the external card terminal, then click confirm below.' : 'Verify the transfer has been received in the bank account, then click confirm below.' }}
+        </div>
       </div>
       <!-- GiftCard section -->
       <div *ngIf="payMethod() === 'GIFTCARD'" style="padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;">

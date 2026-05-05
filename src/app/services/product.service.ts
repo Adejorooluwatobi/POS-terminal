@@ -74,6 +74,7 @@ export class ProductService {
 
     return {
       id: dto.id,
+      variantId: dto.variants && dto.variants.length > 0 ? dto.variants[0].id : dto.id,
       name: dto.name,
       sku: dto.masterSku || dto.sku || '',
       barcode: dto.barcodes && dto.barcodes.length > 0 ? dto.barcodes[0] : (dto.barcode || ''),
