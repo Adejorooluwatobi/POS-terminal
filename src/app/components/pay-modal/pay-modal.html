@@ -14,11 +14,12 @@
         <div class="mono" style="font-size:32px;font-weight:700;color:var(--green);">{{ fmt(pos.grandTotal()) }}</div>
       </div>
       <!-- Methods -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(80px, 1fr));gap:5px;margin-bottom:14px;">
-        <button class="btn btn-xs" style="justify-content:center;" [class.btn-accent]="payMethod() === 'CASH'" [class.btn-ghost]="payMethod() !== 'CASH'" (click)="selPayMethod('CASH')">Cash</button>
-        <button class="btn btn-xs" style="justify-content:center;" [class.btn-accent]="payMethod() === 'CARD'" [class.btn-ghost]="payMethod() !== 'CARD'" (click)="selPayMethod('CARD')">Card</button>
-        <button class="btn btn-xs" style="justify-content:center;" [class.btn-accent]="payMethod() === 'MOBILE'" [class.btn-ghost]="payMethod() !== 'MOBILE'" (click)="selPayMethod('MOBILE')">Transfer</button>
-        <button class="btn btn-xs" style="justify-content:center;" [class.btn-accent]="payMethod() === 'SPLIT'" [class.btn-ghost]="payMethod() !== 'SPLIT'" (click)="selPayMethod('SPLIT')">Split</button>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(60px, 1fr));gap:5px;margin-bottom:14px;">
+        <button class="btn btn-xs" style="justify-content:center;font-size:10px;" [class.btn-accent]="payMethod() === 'CASH'" [class.btn-ghost]="payMethod() !== 'CASH'" (click)="selPayMethod('CASH')">Cash</button>
+        <button class="btn btn-xs" style="justify-content:center;font-size:10px;" [class.btn-accent]="payMethod() === 'CARD'" [class.btn-ghost]="payMethod() !== 'CARD'" (click)="selPayMethod('CARD')">Card</button>
+        <button class="btn btn-xs" style="justify-content:center;font-size:10px;" [class.btn-accent]="payMethod() === 'MOBILE'" [class.btn-ghost]="payMethod() !== 'MOBILE'" (click)="selPayMethod('MOBILE')">Transfer</button>
+        <button class="btn btn-xs" style="justify-content:center;font-size:10px;" [class.btn-accent]="payMethod() === 'GIFTCARD'" [class.btn-ghost]="payMethod() !== 'GIFTCARD'" (click)="selPayMethod('GIFTCARD')">GiftCard</button>
+        <button class="btn btn-xs" style="justify-content:center;font-size:10px;" [class.btn-accent]="payMethod() === 'SPLIT'" [class.btn-ghost]="payMethod() !== 'SPLIT'" (click)="selPayMethod('SPLIT')">Split</button>
       </div>
       <!-- Cash section -->
       <div *ngIf="payMethod() === 'CASH' || payMethod() === 'SPLIT'">
@@ -45,8 +46,30 @@
         <div style="font-size:12px;color:var(--text2);">{{ payMethod() === 'CARD' ? 'Present card to terminal' : 'Awaiting confirmation of bank transfer...' }}</div>
         <div class="mono" style="font-size:10px;color:var(--text3);margin-top:4px;">Awaiting gateway…</div>
       </div>
-      <button (click)="processPayment()" class="btn btn-accent" style="width:100%;justify-content:center;font-size:14px;font-weight:700;padding:11px;border-radius:8px;">
+      <!-- GiftCard section -->
+      <div *ngIf="payMethod() === 'GIFTCARD'" style="padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;">
+        <div style="text-align:center;font-size:28px;margin-bottom:12px;">🎁</div>
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Card Number</div>
+        <input [(ngModel)]="gcNumber" type="text" placeholder="Scan or enter card #" class="inp mono" style="width:100%;margin-bottom:10px;">
+        <div style="display:flex;gap:10px;margin-bottom:10px;">
+          <div style="flex:1;">
+            <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">PIN (Optional)</div>
+            <input [(ngModel)]="gcPin" type="password" placeholder="***" class="inp mono" style="width:100%;">
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Amount to Redeem</div>
+            <div style="position:relative;">
+              <span class="mono" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--accent);">₦</span>
+              <input [(ngModel)]="gcAmount" type="number" class="inp mono" style="width:100%;padding-left:24px;">
+            </div>
+          </div>
+        </div>
+      </div>
+      <button *ngIf="payMethod() !== 'GIFTCARD'" (click)="processPayment()" class="btn btn-accent" style="width:100%;justify-content:center;font-size:14px;font-weight:700;padding:11px;border-radius:8px;">
         ✓ Confirm Payment
+      </button>
+      <button *ngIf="payMethod() === 'GIFTCARD'" (click)="redeemGiftCard()" [disabled]="isRedeeming() || !gcNumber()" class="btn btn-accent" style="width:100%;justify-content:center;font-size:14px;font-weight:700;padding:11px;border-radius:8px;">
+        {{ isRedeeming() ? 'Redeeming...' : '✓ Redeem Gift Card' }}
       </button>
     </div>
   </div>
