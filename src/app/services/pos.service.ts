@@ -30,6 +30,7 @@ export class POSService {
   
   // Promotion State
   appliedPromo = signal<{code: string, amount: number, promotionId?: string} | null>(null);
+  redeemedGiftCards = signal<{cardNumber: string, amount: number}[]>([]);
 
   currentCustomer = signal<Customer | null>(null);
   txCounter = signal<number>(1);
@@ -61,7 +62,11 @@ export class POSService {
     return promo ? promo.amount : 0;
   });
 
-  totalDiscount = computed(() => this.itemTotalDiscount() + this.couponDiscount());
+  giftCardDiscount = computed(() => {
+    return this.redeemedGiftCards().reduce((s, gc) => s + gc.amount, 0);
+  });
+
+  totalDiscount = computed(() => this.itemTotalDiscount() + this.couponDiscount() + this.giftCardDiscount());
 
   taxableAmount = computed(() => {
     const taxableItemsSub = this.cart()
@@ -74,7 +79,8 @@ export class POSService {
 
   grandTotal = computed(() => {
     const afterCoupon = Math.max(0, this.subtotal() - this.couponDiscount());
-    return afterCoupon + this.vat();
+    const afterTax = afterCoupon + this.vat();
+    return Math.max(0, afterTax - this.giftCardDiscount());
   });
 
   constructor() {
@@ -106,7 +112,7 @@ export class POSService {
     }
   }
 
-  addToCart(productId: number, overrideQty?: number) {
+  addToCart(productId: string | number, overrideQty?: number) {
     const p = this.products().find(x => x.id === productId);
     if (!p) return;
 
@@ -140,6 +146,9 @@ export class POSService {
     }
 
     if (p) {
+      if (!this.products().find(x => x.id === p!.id)) {
+        this.products.update(prev => [...prev, p!]);
+      }
       this.addToCart(p.id);
       this.addToRecentScanned(p);
       return p;
@@ -169,6 +178,7 @@ export class POSService {
   clearCart() {
     this.cart.set([]);
     this.appliedPromo.set(null);
+    this.redeemedGiftCards.set([]);
     this.currentCustomer.set(null);
     this.selectedItemIdx.set(-1);
     this.numBuffer.set('');
