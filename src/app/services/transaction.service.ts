@@ -51,7 +51,10 @@ export class TransactionService {
       items,
       payments: [
         {
-          method: tx.method,
+          method: tx.method === 'CASH' ? 'Cash' : 
+                  tx.method === 'CARD' ? 'Card' : 
+                  tx.method === 'MOBILE' ? 'Transfer' : 
+                  tx.method === 'GIFTCARD' ? 'GiftCard' : 'Cash',
           amount: tx.grand,
           amountTendered: tx.tender
         }
