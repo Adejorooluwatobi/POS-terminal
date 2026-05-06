@@ -40,6 +40,10 @@
       <span style="font-size:10px;color:var(--text3);">· {{ staff.role }}</span>
     </div>
 
+    <button (click)="clickTill.emit()" class="btn btn-ghost btn-xs" [class.btn-success]="tillService.currentSession()">
+      <span class="status-dot" *ngIf="tillService.currentSession()"></span>
+      Till: {{ tillService.currentSession() ? 'Open' : 'Closed' }}
+    </button>
     <button (click)="openSessionSummary()" class="btn btn-ghost btn-xs">Summary</button>
     <button (click)="clickGiftCard.emit()" class="btn btn-ghost btn-xs">Gift Card</button>
     <button (click)="clickCalculator.emit()" class="btn btn-ghost btn-xs" title="Calculator">

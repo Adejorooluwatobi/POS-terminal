@@ -13,7 +13,9 @@ import { GiftCardSaleModal } from '../../components/gift-card-sale-modal/gift-ca
 import { SummaryModal } from '../../components/summary-modal/summary-modal';
 import { ToastContainer } from '../../components/toast-container/toast-container';
 import { CalculatorComponent } from '../../components/calculator/calculator.component';
+import { TillModalComponent } from '../../components/till-modal/till-modal';
 import { POSService } from '../../services/pos.service';
+import { TillSessionService } from '../../services/till-session.service';
 
 @Component({
   selector: 'app-pos-terminal',
@@ -32,13 +34,15 @@ import { POSService } from '../../services/pos.service';
     GiftCardSaleModal,
     SummaryModal,
     ToastContainer,
-    CalculatorComponent
+    CalculatorComponent,
+    TillModalComponent
   ],
   templateUrl: './pos-terminal.html',
   styleUrl: './pos-terminal.css',
 })
 export class POSTerminal {
   pos = inject(POSService);
+  tillSession = inject(TillSessionService);
 
   showPayModal = signal(false);
   showReceiptModal = signal(false);
@@ -48,6 +52,7 @@ export class POSTerminal {
   showGiftCardModal = signal(false);
   showSummaryModal = signal(false);
   showCalculator = signal(false);
+  showTillModal = signal(false);
 
   openPayModal() { this.showPayModal.set(true); }
   closePayModal() { this.showPayModal.set(false); }
@@ -74,6 +79,9 @@ export class POSTerminal {
 
   openSummaryModal() { this.showSummaryModal.set(true); }
   closeSummaryModal() { this.showSummaryModal.set(false); }
+
+  openTillModal() { this.showTillModal.set(true); }
+  closeTillModal() { this.showTillModal.set(false); }
 
   startNewTransaction() {
     this.pos.clearCart();

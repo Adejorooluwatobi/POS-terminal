@@ -23,7 +23,12 @@ export class TransactionService {
    */
   createTransaction(tx: Transaction): Observable<Transaction> {
     const storeId = localStorage.getItem('store_id') || tx.storeId || tx.staff?.store || '';
-    const sessionId = localStorage.getItem('till_session_id') || '00000000-0000-0000-0000-000000000001';
+    const sessionId = localStorage.getItem('till_session_id');
+
+    if (!sessionId) {
+      console.error('CRITICAL: Attempting to create transaction without an active Till Session');
+      // In a real app, we might want to block this or redirect to session opening
+    }
 
     // Validate StoreId is not empty or Guid.Empty
     if (!storeId || storeId === '00000000-0000-0000-0000-000000000000') {
@@ -43,7 +48,14 @@ export class TransactionService {
       customerId: tx.customer?.id || null,
       type: 'Sale',
       notes: tx.promotionId ? `Promo: ${tx.promotionId}` : null,
-      items
+      items,
+      payments: [
+        {
+          method: tx.method,
+          amount: tx.grand,
+          amountTendered: tx.tender
+        }
+      ]
     };
 
     console.log('Syncing transaction to cloud:', payload);
