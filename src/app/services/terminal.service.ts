@@ -33,6 +33,7 @@ export class TerminalService {
           if (res.terminal) {
             console.log('Terminal data found:', res.terminal);
             localStorage.setItem('terminal_data', JSON.stringify(res.terminal));
+            localStorage.setItem('terminal_id', res.terminal.id);
             localStorage.setItem('store_id', res.terminal.storeId || '');
             localStorage.setItem('store_name', res.terminal.name || '');
             this.pairedTerminal.set(res.terminal);

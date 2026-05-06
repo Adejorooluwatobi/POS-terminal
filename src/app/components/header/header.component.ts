@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { POSService } from '../../services/pos.service';
 import { ToastService } from '../../services/toast.service';
+import { TillSessionService } from '../../services/till-session.service';
 
 @Component({
   selector: 'app-header',
@@ -18,6 +19,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   themeService = inject(ThemeService);
   pos = inject(POSService);
   toast = inject(ToastService);
+  tillService = inject(TillSessionService);
 
   isScannerFocused = false;
   clock = signal<string>('--:--:--');
@@ -26,6 +28,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   @Output() clickSummary = new EventEmitter<void>();
   @Output() clickCalculator = new EventEmitter<void>();
   @Output() clickGiftCard = new EventEmitter<void>();
+  @Output() clickTill = new EventEmitter<void>();
 
   ngOnInit() {
     this.startClock();

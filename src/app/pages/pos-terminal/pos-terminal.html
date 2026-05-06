@@ -3,7 +3,8 @@
   <app-header 
     (clickSummary)="openSummaryModal()"
     (clickCalculator)="showCalculator.set(true)"
-    (clickGiftCard)="openGiftCardModal()">
+    (clickGiftCard)="openGiftCardModal()"
+    (clickTill)="openTillModal()">
   </app-header>
 
   <div style="flex:1;display:flex;overflow:hidden;width:100%;min-height:0;">
@@ -72,4 +73,5 @@
 
   <app-toast-container></app-toast-container>
 
+  <app-till-modal *ngIf="showTillModal()" (close)="closeTillModal()"></app-till-modal>
 </div>
