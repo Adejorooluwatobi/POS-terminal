@@ -27,10 +27,8 @@ export class TransactionService {
 
     if (!sessionId) {
       console.error('CRITICAL: Attempting to create transaction without an active Till Session');
-      // In a real app, we might want to block this or redirect to session opening
     }
 
-    // Validate StoreId is not empty or Guid.Empty
     if (!storeId || storeId === '00000000-0000-0000-0000-000000000000') {
       console.error('CRITICAL: Attempting to create transaction with empty StoreId');
     }
@@ -42,6 +40,15 @@ export class TransactionService {
       taxRate: item.tax || 0
     }));
 
+    const methodMap: Record<string, string> = {
+      'CASH':     'Cash',
+      'CARD':     'Card',
+      'MOBILE':   'MobileMoney',
+      'TRANSFER': 'BankTransfer',
+      'GIFTCARD': 'GiftCard',
+    };
+    const method = methodMap[tx.method] || 'Cash';
+
     const payload = {
       storeId,
       sessionId,
@@ -51,10 +58,7 @@ export class TransactionService {
       items,
       payments: [
         {
-          method: tx.method === 'CASH' ? 'Cash' : 
-                  tx.method === 'CARD' ? 'Card' : 
-                  tx.method === 'MOBILE' ? 'Transfer' : 
-                  tx.method === 'GIFTCARD' ? 'GiftCard' : 'Cash',
+          method,
           amount: tx.grand,
           amountTendered: tx.tender
         }
