@@ -49,6 +49,29 @@ export class TransactionService {
     };
     const method = methodMap[tx.method] || 'Cash';
 
+    const payments: any[] = [];
+    
+    // 1. Add Redeemed Gift Cards
+    if (tx.redeemedGiftCards && tx.redeemedGiftCards.length > 0) {
+      tx.redeemedGiftCards.forEach(gc => {
+        payments.push({
+          method: 'GiftCard',
+          amount: gc.amount,
+          giftCardId: gc.giftCardId || null
+        });
+      });
+    }
+
+    // 2. Add the final payment method (Cash/Transfer/etc)
+    // Only add if there's a balance or if it's the only payment
+    if (tx.grand > 0 || payments.length === 0) {
+      payments.push({
+        method,
+        amount: tx.grand,
+        amountTendered: tx.tender
+      });
+    }
+
     const payload = {
       storeId,
       sessionId,
@@ -56,13 +79,7 @@ export class TransactionService {
       type: 'Sale',
       notes: tx.promotionId ? `Promo: ${tx.promotionId}` : null,
       items,
-      payments: [
-        {
-          method,
-          amount: tx.grand,
-          amountTendered: tx.tender
-        }
-      ]
+      payments
     };
 
     console.log('Syncing transaction to cloud:', payload);
