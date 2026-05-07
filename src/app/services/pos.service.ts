@@ -112,20 +112,26 @@ export class POSService {
     }
   }
 
-  addToCart(productId: string | number, overrideQty?: number) {
+  addToCart(productId: string | number, overrideQty?: number, unit: 'Single' | 'Roll' | 'Pack' = 'Single') {
     const p = this.products().find(x => x.id === productId);
     if (!p) return;
 
     const qty = overrideQty || (this.numBuffer() ? parseInt(this.numBuffer()) : 1);
     this.numBuffer.set('');
 
+    // Determine price based on unit
+    let price = p.price;
+    if (unit === 'Roll' && p.rollPrice) price = p.rollPrice;
+    if (unit === 'Pack' && p.packPrice) price = p.packPrice;
+
     this.cart.update(prev => {
-      const existing = prev.find(i => i.id === productId);
+      // Find item with same ID AND same unit
+      const existing = prev.find(i => i.id === productId && i.unit === unit);
       if (existing) {
         existing.qty += qty;
         return [...prev];
       } else {
-        return [...prev, { ...p, qty, discount: 0 }];
+        return [...prev, { ...p, price, qty, discount: 0, unit }];
       }
     });
 
