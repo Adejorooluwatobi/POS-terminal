@@ -9,9 +9,15 @@ export interface Product {
   cost: number;
   emoji: string;
   tax: number;
+  rollPrice?: number;
+  packPrice?: number;
+  singlesPerRoll?: number;
+  rollsPerPack?: number;
+  singlesPerPack?: number;
 }
 
 export interface CartItem extends Product {
   qty: number;
   discount: number;
+  unit: 'Single' | 'Roll' | 'Pack';
 }

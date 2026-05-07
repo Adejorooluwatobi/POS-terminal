@@ -47,6 +47,8 @@ export class ProductBrowser {
     return list;
   });
 
+  unitSelectionProduct = signal<Product | null>(null);
+
   onSearch(e: Event) {
     const input = e.target as HTMLInputElement;
     this.searchQuery.set(input.value);
@@ -56,7 +58,23 @@ export class ProductBrowser {
     this.selectedCategory.set(cat);
   }
 
-  addToCart(p: Product) {
-    this.pos.addToCart(p.id);
+  onProductClick(p: Product) {
+    if (p.rollPrice || p.packPrice) {
+      this.unitSelectionProduct.set(p);
+    } else {
+      this.pos.addToCart(p.id, undefined, 'Single');
+    }
+  }
+
+  selectUnitAndAdd(unit: 'Single' | 'Roll' | 'Pack') {
+    const p = this.unitSelectionProduct();
+    if (p) {
+      this.pos.addToCart(p.id, undefined, unit);
+      this.unitSelectionProduct.set(null);
+    }
+  }
+
+  closeUnitSelection() {
+    this.unitSelectionProduct.set(null);
   }
 }
