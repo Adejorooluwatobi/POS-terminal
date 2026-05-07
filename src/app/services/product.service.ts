@@ -65,10 +65,15 @@ export class ProductService {
 
     // Check for store price overrides
     let finalPrice = dto.basePrice !== undefined ? dto.basePrice : dto.price;
+    let finalRollPrice = dto.rollPrice;
+    let finalPackPrice = dto.packPrice;
+
     if (dto.storeOverrides && Array.isArray(dto.storeOverrides)) {
       const override = dto.storeOverrides.find((o: any) => o.storeId === currentStoreId && o.isActive);
       if (override) {
         finalPrice = override.price;
+        if (override.rollPrice) finalRollPrice = override.rollPrice;
+        if (override.packPrice) finalPackPrice = override.packPrice;
       }
     }
 
@@ -82,7 +87,12 @@ export class ProductService {
       price: finalPrice,
       cost: dto.costPrice !== undefined ? dto.costPrice : dto.cost,
       emoji: '📦',
-      tax: dto.taxRate !== undefined ? dto.taxRate : dto.tax
+      tax: dto.taxRate !== undefined ? dto.taxRate : dto.tax,
+      rollPrice: finalRollPrice,
+      packPrice: finalPackPrice,
+      singlesPerRoll: dto.singlesPerRoll,
+      rollsPerPack: dto.rollsPerPack,
+      singlesPerPack: dto.singlesPerPack
     };
   }
 }
