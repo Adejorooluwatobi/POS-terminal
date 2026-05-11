@@ -1,7 +1,7 @@
 <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
   <!-- Left: branding -->
   <div style="display:flex;align-items:center;gap:8px;">
-    <span class="mono" style="font-size:11px;font-weight:700;color:var(--accent);">RETAILOS</span>
+    <span class="mono" style="font-size:11px;font-weight:700;color:var(--accent);">{{ (auth.currentStaff()?.businessName || 'RETAILOS') | uppercase }}</span>
     <span style="color:var(--border2);">|</span>
     <span class="mono" style="font-size:10px;color:var(--text3);">LG-01-T3</span>
     <span class="tag tag-green">ONLINE</span>

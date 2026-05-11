@@ -5,7 +5,7 @@
     <div class="flex items-center gap-3">
       <div class="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center text-xs font-extrabold text-[#000] shrink-0">R</div>
       <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <div class="text-[13px] font-bold text-[var(--text)] whitespace-nowrap">RetailOS</div>
+        <div class="text-[13px] font-bold text-[var(--text)] whitespace-nowrap">{{ auth.currentStaff()?.businessName || 'RetailOS' }}</div>
         <div class="mono text-[9px] text-[var(--text3)] whitespace-nowrap">POS Terminal</div>
       </div>
     </div>

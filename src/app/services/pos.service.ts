@@ -47,6 +47,7 @@ export class POSService {
       return 'Walk-in';
     }
   });
+  businessName = computed(() => this.auth.currentStaff()?.businessName || 'RETAILOS STORE');
 
 
   subtotal = computed(() => {

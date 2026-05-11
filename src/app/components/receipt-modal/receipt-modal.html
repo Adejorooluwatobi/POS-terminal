@@ -7,7 +7,7 @@
     
     <div *ngIf="pos.lastTx() as tx" class="mono thin-scroll" style="padding:16px;font-size:11px;line-height:1.7;max-height:420px;overflow-y:auto;background:var(--surface2);border-radius:10px;margin:12px;">
       <div style="text-align:center;margin-bottom:15px;color:var(--text);">
-        <div style="font-size:14px;font-weight:700;letter-spacing:-0.02em;">RETAILOS STORE</div>
+        <div style="font-size:14px;font-weight:700;letter-spacing:-0.02em;">{{ pos.businessName() | uppercase }}</div>
         <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Premium Retail Experience</div>
         <div style="font-size:10px;color:var(--text3);margin-top:4px;">23 Adeola Hopewell, VI, Lagos</div>
       </div>
