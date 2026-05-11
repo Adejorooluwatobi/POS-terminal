@@ -16,6 +16,8 @@ import { CalculatorComponent } from '../../components/calculator/calculator.comp
 import { TillModalComponent } from '../../components/till-modal/till-modal';
 import { POSService } from '../../services/pos.service';
 import { TillSessionService } from '../../services/till-session.service';
+import { ScannerService } from '../../services/scanner.service';
+import { OnInit, OnDestroy } from '@angular/core';
 
 @Component({
   selector: 'app-pos-terminal',
@@ -40,9 +42,18 @@ import { TillSessionService } from '../../services/till-session.service';
   templateUrl: './pos-terminal.html',
   styleUrl: './pos-terminal.css',
 })
-export class POSTerminal {
+export class POSTerminal implements OnInit, OnDestroy {
   pos = inject(POSService);
   tillSession = inject(TillSessionService);
+  scanner = inject(ScannerService);
+
+  ngOnInit() {
+    this.scanner.init();
+  }
+
+  ngOnDestroy() {
+    this.scanner.destroy();
+  }
 
   showPayModal = signal(false);
   showReceiptModal = signal(false);
