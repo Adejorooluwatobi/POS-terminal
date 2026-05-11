@@ -35,6 +35,12 @@
   background: var(--surface);
 }
 
+.scanner-bar.scanning {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.05);
+}
+
 .tag {
   font-size: 8px;
   font-weight: 800;

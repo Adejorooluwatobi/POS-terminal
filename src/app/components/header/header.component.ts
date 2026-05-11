@@ -6,6 +6,7 @@ import { ThemeService } from '../../services/theme.service';
 import { POSService } from '../../services/pos.service';
 import { ToastService } from '../../services/toast.service';
 import { TillSessionService } from '../../services/till-session.service';
+import { ScannerService } from '../../services/scanner.service';
 
 @Component({
   selector: 'app-header',
@@ -20,6 +21,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   pos = inject(POSService);
   toast = inject(ToastService);
   tillService = inject(TillSessionService);
+  scanner = inject(ScannerService);
 
   isScannerFocused = false;
   clock = signal<string>('--:--:--');
