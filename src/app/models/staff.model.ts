@@ -6,4 +6,5 @@ export interface Staff {
   pin: string;
   store: string;
   color: string;
+  businessName?: string;
 }

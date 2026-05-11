@@ -80,7 +80,8 @@ export class AuthService {
           role: (res.role || 'CASHIER').toUpperCase() as any,
           pin: pin,
           store: localStorage.getItem('store_id') || res.storeId || sId,
-          color: '#00c2ff'
+          color: '#00c2ff',
+          businessName: res.businessName
         };
         this.currentStaff.set(staff);
         localStorage.setItem('currentStaff', JSON.stringify(staff));

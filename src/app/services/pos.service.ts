@@ -45,8 +45,8 @@ export class POSService {
       return c.name.split(' ')[0] || 'Walk-in';
     } catch (e) {
       return 'Walk-in';
-    }
   });
+  businessName = computed(() => this.auth.currentStaff()?.businessName || 'RETAILOS STORE');
 
 
   subtotal = computed(() => {
