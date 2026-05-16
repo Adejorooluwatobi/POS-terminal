@@ -48,6 +48,7 @@ export class GiftCardSaleModal {
         category: 'FINANCIAL',
         sku: this.cardNumber(),
         barcode: this.cardNumber(),
+        pin: this.pin(),
         stock: 999
       } as any
     ]);

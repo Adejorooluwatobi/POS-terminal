@@ -34,10 +34,13 @@ export class TransactionService {
     }
 
     const items = (tx.items || []).map((item: any) => ({
-      variantId: item.variantId || item.id,
+      variantId: item.variantId || (item.id === -99 ? '00000000-0000-0000-0000-000000000000' : item.id),
       quantity: item.qty,
       unitPrice: item.price,
-      taxRate: item.tax || 0
+      taxRate: item.tax || 0,
+      isGiftCardSale: item.id === -99,
+      giftCardNumber: item.id === -99 ? item.sku : null,
+      giftCardPin: item.id === -99 ? item.pin : null
     }));
 
     const methodMap: Record<string, string> = {
