@@ -8,6 +8,10 @@ import { ApiService } from './api.service';
 export class GiftCardService {
   private api = inject(ApiService);
 
+  getGiftCards(page: number = 1, size: number = 50): Observable<any> {
+    return this.api.get<any>('/api/gift-cards', { page, size });
+  }
+
   redeem(cardNumber: string, amount: number, pin?: string): Observable<any> {
     return this.api.post<any>('/api/gift-cards/redeem', {
       cardNumber,

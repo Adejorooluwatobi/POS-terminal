@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { POSService } from '../../services/pos.service';
 import { ToastService } from '../../services/toast.service';
+import { GiftCardService } from '../../services/gift-card.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-gift-card-sale-modal',
@@ -14,6 +16,7 @@ import { ToastService } from '../../services/toast.service';
 export class GiftCardSaleModal {
   private pos = inject(POSService);
   private toast = inject(ToastService);
+  private giftCardService = inject(GiftCardService);
 
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
@@ -21,13 +24,39 @@ export class GiftCardSaleModal {
   cardNumber = signal('');
   amount = signal<number>(0);
   pin = signal('');
+  activeCards = signal<any[]>([]);
+  isLoading = signal(false);
+  searchTerm = signal('');
 
-  ngOnChanges() {
+  async ngOnChanges() {
     if (this.isOpen) {
-      this.cardNumber.set('GC-' + Math.floor(10000000 + Math.random() * 90000000).toString());
-      this.pin.set(Math.floor(1000 + Math.random() * 9000).toString());
-      this.amount.set(0);
+      this.generateNewCard();
+      await this.loadActiveCards();
     }
+  }
+
+  generateNewCard() {
+    this.cardNumber.set('GC-' + Math.floor(10000000 + Math.random() * 90000000).toString());
+    this.pin.set(Math.floor(1000 + Math.random() * 9000).toString());
+    this.amount.set(0);
+  }
+
+  async loadActiveCards() {
+    this.isLoading.set(true);
+    try {
+      const res = await firstValueFrom(this.giftCardService.getGiftCards(1, 100));
+      this.activeCards.set(res.items || res);
+    } catch (e) {
+      console.error('Failed to load active cards', e);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  selectCard(card: any) {
+    this.cardNumber.set(card.cardNumber);
+    this.pin.set('****'); // We don't show pin for existing cards usually
+    this.toast.show(`Selected Card: ${card.cardNumber}`, 'success');
   }
 
   onAddToCart() {
