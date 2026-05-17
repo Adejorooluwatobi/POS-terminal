@@ -18,20 +18,49 @@
         <input 
           type="text" 
           [(ngModel)]="cardNumber" 
+          [disabled]="isExistingCard()"
           class="card-number-input mono" 
           placeholder="GC-00000000"
           style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; font-size: 1.1rem; text-align: center; margin-bottom: 10px;">
         
-        <div class="input-group">
-          <label>PIN (Cashier can set custom)</label>
-          <input 
-            type="text" 
-            [(ngModel)]="pin" 
-            placeholder="4-digit PIN"
-            class="pin-input mono">
-        </div>
+        @if (!isExistingCard()) {
+          <div class="input-group">
+            <label>PIN (Cashier can set custom)</label>
+            <input 
+              type="text" 
+              [(ngModel)]="pin" 
+              placeholder="4-digit PIN"
+              class="pin-input mono">
+          </div>
+        } @else {
+          <div class="input-group" style="margin-bottom:10px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" [(ngModel)]="changePin" (change)="changePin() ? pin.set('') : null">
+              Change PIN
+            </label>
+          </div>
+          
+          @if (changePin()) {
+            <div class="input-group">
+              <label>Current PIN</label>
+              <input 
+                type="password" 
+                [(ngModel)]="oldPin" 
+                placeholder="Enter current PIN"
+                class="pin-input mono">
+            </div>
+            <div class="input-group" style="margin-top:10px;">
+              <label>New PIN</label>
+              <input 
+                type="text" 
+                [(ngModel)]="pin" 
+                placeholder="4-digit PIN"
+                class="pin-input mono">
+            </div>
+          }
+        }
 
-        <div class="input-group">
+        <div class="input-group" style="margin-top:15px;">
           <label>Load Amount (₦)</label>
           <input 
             type="number" 
@@ -43,26 +72,29 @@
 
       <!-- Right: Pick from Existing -->
       <div style="display:flex;flex-direction:column;border-left:1px solid var(--border);padding-left:20px;">
-        <div class="card-number-label">Pick from Portal Cards</div>
-        <div style="position:relative;margin-bottom:10px;">
-          <input type="text" [(ngModel)]="searchTerm" class="inp" placeholder="Search cards..." style="padding-left:30px;font-size:12px;">
-          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);">🔍</span>
+        <div class="card-number-label">Lookup Portal Card</div>
+        <div style="display:flex;gap:8px;margin-bottom:15px;">
+          <div style="position:relative;flex:1;">
+            <input type="text" [(ngModel)]="searchTerm" class="inp" placeholder="Enter exact card number..." style="padding-left:30px;font-size:12px;width:100%;">
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);">🔍</span>
+          </div>
+          <button class="btn btn-primary" (click)="searchCard()" [disabled]="isLoading()" style="padding: 0 15px; font-size: 12px;">Search</button>
         </div>
 
-        <div style="flex:1;max-height:200px;overflow-y:auto;background:rgba(0,0,0,0.2);border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:6px;">
+        <div style="flex:1;background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;display:flex;flex-direction:column;">
           @if (isLoading()) {
-            <div style="text-align:center;padding:20px;font-size:11px;color:var(--text3);">Loading cards...</div>
+            <div style="text-align:center;padding:20px;font-size:12px;color:var(--text3);">Searching...</div>
+          } @else if (searchedCard()) {
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="font-size:12px;color:var(--text2);">Card Found</div>
+              <div class="mono" style="font-size:16px;color:#fff;">{{ searchedCard().cardNumber }}</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border);">
+                <span style="font-size:12px;color:var(--text2);">Current Balance</span>
+                <span style="font-size:14px;font-weight:700;color:var(--accent);">₦{{ searchedCard().balance }}</span>
+              </div>
+            </div>
           } @else {
-            @for (c of activeCards(); track c.id) {
-              @if (!searchTerm() || c.cardNumber.includes(searchTerm())) {
-                <div (click)="selectCard(c)" 
-                     class="card-item-select"
-                     style="padding:8px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all 0.2s;">
-                  <span class="mono" style="font-size:12px;">{{ c.cardNumber }}</span>
-                  <span style="font-size:11px;font-weight:700;color:var(--accent);">₦{{ c.balance }}</span>
-                </div>
-              }
-            }
+            <div style="text-align:center;padding:20px;font-size:12px;color:var(--text3);">Enter a complete card number to lookup an existing portal card for top-up.</div>
           }
         </div>
       </div>

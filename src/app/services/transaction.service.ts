@@ -38,9 +38,11 @@ export class TransactionService {
       quantity: item.qty,
       unitPrice: item.price,
       taxRate: item.tax || 0,
+      name: item.name,
       isGiftCardSale: item.id === -99,
       giftCardNumber: item.id === -99 ? item.sku : null,
-      giftCardPin: item.id === -99 ? item.pin : null
+      giftCardPin: item.id === -99 ? item.pin : null,
+      giftCardOldPin: item.id === -99 ? item.oldPin : null
     }));
 
     const methodMap: Record<string, string> = {

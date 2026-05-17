@@ -12,6 +12,10 @@ export class GiftCardService {
     return this.api.get<any>('/api/gift-cards', { page, size });
   }
 
+  getGiftCardByNumber(cardNumber: string): Observable<any> {
+    return this.api.get<any>(`/api/gift-cards/by-number/${cardNumber}`);
+  }
+
   redeem(cardNumber: string, amount: number, pin?: string): Observable<any> {
     return this.api.post<any>('/api/gift-cards/redeem', {
       cardNumber,
