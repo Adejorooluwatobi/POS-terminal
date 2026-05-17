@@ -24,14 +24,18 @@ export class GiftCardSaleModal {
   cardNumber = signal('');
   amount = signal<number>(0);
   pin = signal('');
-  activeCards = signal<any[]>([]);
+  oldPin = signal('');
+  changePin = signal(false);
+  isExistingCard = signal(false);
+  searchedCard = signal<any>(null);
+
   isLoading = signal(false);
   searchTerm = signal('');
 
-  async ngOnChanges() {
+  ngOnChanges() {
     if (this.isOpen) {
+      this.searchTerm.set('');
       this.generateNewCard();
-      await this.loadActiveCards();
     }
   }
 
@@ -39,28 +43,42 @@ export class GiftCardSaleModal {
     this.cardNumber.set('GC-' + Math.floor(10000000 + Math.random() * 90000000).toString());
     this.pin.set(Math.floor(1000 + Math.random() * 9000).toString());
     this.amount.set(0);
+    this.oldPin.set('');
+    this.changePin.set(false);
+    this.isExistingCard.set(false);
+    this.searchedCard.set(null);
   }
 
-  async loadActiveCards() {
+  async searchCard() {
+    if (!this.searchTerm()) return;
+    
     this.isLoading.set(true);
     try {
-      const res = await firstValueFrom(this.giftCardService.getGiftCards(1, 100));
-      this.activeCards.set(res.items || res);
+      const res = await firstValueFrom(this.giftCardService.getGiftCardByNumber(this.searchTerm()));
+      if (res) {
+        this.searchedCard.set(res);
+        this.cardNumber.set(res.cardNumber);
+        this.isExistingCard.set(true);
+        this.changePin.set(false);
+        this.pin.set('');
+        this.oldPin.set('');
+        this.amount.set(0);
+        this.toast.show(`Found Card: ${res.cardNumber}`, 'success');
+      }
     } catch (e) {
-      console.error('Failed to load active cards', e);
+      this.toast.show('Card not found', 'error');
+      this.searchedCard.set(null);
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  selectCard(card: any) {
-    this.cardNumber.set(card.cardNumber);
-    this.pin.set('****'); // We don't show pin for existing cards usually
-    this.toast.show(`Selected Card: ${card.cardNumber}`, 'success');
-  }
-
   onAddToCart() {
     if (this.amount() <= 0) return;
+    if (this.isExistingCard() && this.changePin() && (!this.oldPin() || !this.pin())) {
+      this.toast.show('Both current and new PIN are required to change PIN', 'error');
+      return;
+    }
 
     // Add to cart as a special "Gift Card" item
     // In a real system, the transaction processing would trigger the issuance on the backend
@@ -77,7 +95,8 @@ export class GiftCardSaleModal {
         category: 'FINANCIAL',
         sku: this.cardNumber(),
         barcode: this.cardNumber(),
-        pin: this.pin(),
+        pin: this.isExistingCard() ? (this.changePin() ? this.pin() : null) : this.pin(),
+        oldPin: this.isExistingCard() && this.changePin() ? this.oldPin() : null,
         stock: 999
       } as any
     ]);
