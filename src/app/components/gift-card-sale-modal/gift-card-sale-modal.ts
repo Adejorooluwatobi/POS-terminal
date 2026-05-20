@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { POSService } from '../../services/pos.service';
 import { ToastService } from '../../services/toast.service';
 import { GiftCardService } from '../../services/gift-card.service';
+import { AuthService } from '../../services/auth.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -17,6 +18,7 @@ export class GiftCardSaleModal {
   private pos = inject(POSService);
   private toast = inject(ToastService);
   private giftCardService = inject(GiftCardService);
+  private auth = inject(AuthService);
 
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
@@ -40,13 +42,39 @@ export class GiftCardSaleModal {
   }
 
   generateNewCard() {
-    this.cardNumber.set('GC-' + Math.floor(10000000 + Math.random() * 90000000).toString());
+    const businessName = this.auth.currentStaff()?.businessName || '';
+    const prefix = this.getTenantPrefix(businessName);
+    const digitsCount = 16 - prefix.length;
+    let digits = '';
+    for (let i = 0; i < digitsCount; i++) {
+      digits += Math.floor(Math.random() * 10).toString();
+    }
+    this.cardNumber.set(prefix + digits);
     this.pin.set(Math.floor(1000 + Math.random() * 9000).toString());
     this.amount.set(0);
     this.oldPin.set('');
     this.changePin.set(false);
     this.isExistingCard.set(false);
     this.searchedCard.set(null);
+  }
+
+  private getTenantPrefix(businessName: string): string {
+    const name = (businessName || '').trim().toLowerCase();
+    if (name.includes('nevermind')) return 'NVMD';
+    if (name.includes('shoprite')) return 'SPR';
+
+    const consonants = name.split('').filter(c => /[a-z]/i.test(c) && !'aeiou'.includes(c));
+    if (consonants.length >= 3) {
+      const candidate = consonants.join('').toUpperCase();
+      return candidate.length > 4 ? candidate.substring(0, 4) : candidate;
+    }
+
+    const cleanName = name.split('').filter(c => /[a-z]/i.test(c)).join('').toUpperCase();
+    if (cleanName.length >= 3) {
+      return cleanName.length > 4 ? cleanName.substring(0, 4) : cleanName;
+    }
+
+    return 'GFT';
   }
 
   async searchCard() {
