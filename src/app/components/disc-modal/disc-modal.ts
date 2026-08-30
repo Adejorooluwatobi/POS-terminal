@@ -8,7 +8,6 @@ import { POSService } from '../../services/pos.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './disc-modal.html',
-  styleUrl: './disc-modal.css',
 })
 export class DiscModal {
   pos = inject(POSService);

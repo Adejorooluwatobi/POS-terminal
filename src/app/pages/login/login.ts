@@ -11,7 +11,6 @@ import { ThemeService } from '../../services/theme.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css',
 })
 export class Login {
   auth = inject(AuthService);

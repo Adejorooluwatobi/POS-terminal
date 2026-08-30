@@ -11,7 +11,6 @@ import { firstValueFrom } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './pay-modal.html',
-  styleUrl: './pay-modal.css',
 })
 export class PayModal {
   pos = inject(POSService);

@@ -8,7 +8,6 @@ import { Customer } from '../../models/customer.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './customer-modal.html',
-  styleUrl: './customer-modal.css',
 })
 export class CustomerModal {
   pos = inject(POSService);

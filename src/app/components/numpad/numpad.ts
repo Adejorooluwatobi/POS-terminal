@@ -7,7 +7,6 @@ import { POSService } from '../../services/pos.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './numpad.html',
-  styleUrl: './numpad.css',
 })
 export class Numpad {
   pos = inject(POSService);

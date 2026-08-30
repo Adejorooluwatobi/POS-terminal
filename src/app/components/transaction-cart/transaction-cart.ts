@@ -7,7 +7,6 @@ import { POSService } from '../../services/pos.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './transaction-cart.html',
-  styleUrl: './transaction-cart.css',
 })
 export class TransactionCart {
   pos = inject(POSService);

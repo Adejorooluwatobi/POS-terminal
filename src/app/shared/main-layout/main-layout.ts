@@ -8,6 +8,5 @@ import { Sidebar } from '../../components/sidebar/sidebar';
   standalone: true,
   imports: [CommonModule, RouterOutlet, Sidebar],
   templateUrl: './main-layout.html',
-  styleUrl: './main-layout.css',
 })
 export class MainLayout {}

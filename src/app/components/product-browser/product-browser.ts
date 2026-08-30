@@ -8,7 +8,6 @@ import { Product } from '../../models/product.model';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './product-browser.html',
-  styleUrl: './product-browser.css',
 })
 export class ProductBrowser {
   pos = inject(POSService);

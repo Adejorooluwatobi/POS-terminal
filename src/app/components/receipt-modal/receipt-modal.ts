@@ -7,7 +7,6 @@ import { POSService } from '../../services/pos.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './receipt-modal.html',
-  styleUrl: './receipt-modal.css',
 })
 export class ReceiptModal {
   pos = inject(POSService);
