@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://pos-saas-cl9g.onrender.com'
+  apiUrl: 'http://localhost:5041/api'
 };
