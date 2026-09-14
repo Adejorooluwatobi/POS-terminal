@@ -8,7 +8,6 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './summary-modal.html',
-  styleUrl: './summary-modal.css',
 })
 export class SummaryModal {
   pos = inject(POSService);

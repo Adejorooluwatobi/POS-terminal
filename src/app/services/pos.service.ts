@@ -2,7 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { Product, CartItem } from '../models/product.model';
 import { Customer } from '../models/customer.model';
 import { Transaction } from '../models/transaction.model';
-// Mock data removed in favor of services
+import { PRODUCTS, CUSTOMERS } from '../models/mock-data';
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import { ProductService } from './product.service';
@@ -21,8 +21,8 @@ export class POSService {
   private customerService = inject(CustomerService);
   private transactionService = inject(TransactionService);
   private couponService = inject(CouponService);
-  products = signal<Product[]>([]);
-  customers = signal<Customer[]>([]);
+  products = signal<Product[]>(PRODUCTS);
+  customers = signal<Customer[]>(CUSTOMERS);
   cart = signal<CartItem[]>([]);
   heldTxs = signal<any[]>([]);
   selectedItemIdx = signal<number>(-1);
@@ -96,17 +96,27 @@ export class POSService {
       // Fetch Products
       try {
         const prods = await firstValueFrom(this.productService.getProducts());
-        if (prods && Array.isArray(prods)) this.products.set(prods);
+        if (prods && Array.isArray(prods) && prods.length > 0) {
+          this.products.set(prods);
+        } else {
+          this.products.set(PRODUCTS);
+        }
       } catch (e) {
-        console.warn('Failed to fetch products:', e);
+        console.warn('Failed to fetch products from API, loaded default catalog');
+        this.products.set(PRODUCTS);
       }
 
       // Fetch Customers
       try {
         const custs = await firstValueFrom(this.customerService.getCustomers());
-        if (custs && Array.isArray(custs)) this.customers.set(custs);
+        if (custs && Array.isArray(custs) && custs.length > 0) {
+          this.customers.set(custs);
+        } else {
+          this.customers.set(CUSTOMERS);
+        }
       } catch (e) {
-        console.warn('Failed to fetch customers:', e);
+        console.warn('Failed to fetch customers from API, loaded default customer list');
+        this.customers.set(CUSTOMERS);
       }
     } catch (error) {
       console.error('General data fetch error:', error);

@@ -40,7 +40,6 @@ import { OnInit, OnDestroy } from '@angular/core';
     TillModalComponent
   ],
   templateUrl: './pos-terminal.html',
-  styleUrl: './pos-terminal.css',
 })
 export class POSTerminal implements OnInit, OnDestroy {
   pos = inject(POSService);

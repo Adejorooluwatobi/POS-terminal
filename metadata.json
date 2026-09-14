@@ -1,0 +1,6 @@
+{
+  "name": "POS Terminal",
+  "description": "RetailOS Point-of-Sale Terminal application with product catalog, cart management, till sessions, and barcode scanning.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -4,9 +4,11 @@
   "main": "main.js",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "dev": "ng serve --host 0.0.0.0 --port 3000",
+    "start": "ng serve --host 0.0.0.0 --port 3000",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
+<<<<<<< HEAD
     "test": "ng test",
     "electron": "electron .",
     "build:electron": "ng build && electron .",
@@ -33,6 +35,12 @@
       "allowToChangeInstallationDirectory": true
     }
   },
+=======
+    "lint": "prettier --check src",
+    "test": "ng test"
+  },
+  "private": true,
+>>>>>>> ba61ecba5f551ddf2423de08f20ea8325f03f8cf
   "dependencies": {
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",
