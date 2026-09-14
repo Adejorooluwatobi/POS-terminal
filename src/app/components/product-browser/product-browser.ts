@@ -47,6 +47,7 @@ export class ProductBrowser {
   });
 
   unitSelectionProduct = signal<Product | null>(null);
+  unitQty = signal<number>(1);
 
   onSearch(e: Event) {
     const input = e.target as HTMLInputElement;
@@ -58,17 +59,34 @@ export class ProductBrowser {
   }
 
   onProductClick(p: Product) {
+    const defaultQty = this.pos.numBuffer() ? (parseInt(this.pos.numBuffer(), 10) || 1) : 1;
+    this.unitQty.set(defaultQty);
     if (p.rollPrice || p.packPrice) {
       this.unitSelectionProduct.set(p);
     } else {
-      this.pos.addToCart(p.id, undefined, 'Single');
+      this.pos.addToCart(p.id, defaultQty, 'Single');
     }
+  }
+
+  changeUnitQty(delta: number) {
+    this.unitQty.update(q => Math.max(1, q + delta));
+  }
+
+  onUnitQtyChange(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const clean = input.value.replace(/[^0-9]/g, '');
+    let val = parseInt(clean, 10);
+    if (isNaN(val) || val < 1) {
+      val = 1;
+    }
+    input.value = val.toString();
+    this.unitQty.set(val);
   }
 
   selectUnitAndAdd(unit: 'Single' | 'Roll' | 'Pack') {
     const p = this.unitSelectionProduct();
     if (p) {
-      this.pos.addToCart(p.id, undefined, unit);
+      this.pos.addToCart(p.id, this.unitQty(), unit);
       this.unitSelectionProduct.set(null);
     }
   }

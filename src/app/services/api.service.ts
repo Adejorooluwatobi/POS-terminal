@@ -10,6 +10,15 @@ export class ApiService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiUrl;
 
+  private buildUrl(endpoint: string): string {
+    const base = this.baseUrl.replace(/\/+$/, '');
+    const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    if (base.endsWith('/api') && path.startsWith('/api/')) {
+      return `${base}${path.slice(4)}`;
+    }
+    return `${base}${path}`;
+  }
+
   get<T>(endpoint: string, params?: any): Observable<T> {
     let httpParams = new HttpParams();
     if (params) {
@@ -17,18 +26,18 @@ export class ApiService {
         httpParams = httpParams.set(key, params[key]);
       });
     }
-    return this.http.get<T>(`${this.baseUrl}${endpoint}`, { params: httpParams });
+    return this.http.get<T>(this.buildUrl(endpoint), { params: httpParams });
   }
 
   post<T>(endpoint: string, body: any): Observable<T> {
-    return this.http.post<T>(`${this.baseUrl}${endpoint}`, body);
+    return this.http.post<T>(this.buildUrl(endpoint), body);
   }
 
   put<T>(endpoint: string, body: any): Observable<T> {
-    return this.http.put<T>(`${this.baseUrl}${endpoint}`, body);
+    return this.http.put<T>(this.buildUrl(endpoint), body);
   }
 
   delete<T>(endpoint: string): Observable<T> {
-    return this.http.delete<T>(`${this.baseUrl}${endpoint}`);
+    return this.http.delete<T>(this.buildUrl(endpoint));
   }
 }

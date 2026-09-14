@@ -125,6 +125,32 @@ body {
 .inp:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
 .inp::placeholder { color:var(--text3); }
 
+.qty-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 4px;
+  text-align: center;
+  outline: none;
+  padding: 0 4px;
+  min-width: 52px;
+  transition: all .15s;
+  -moz-appearance: textfield;
+}
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.qty-input:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
 /* ─── TAG / BADGE ─────────────────────────────────────── */
 .tag { display:inline-flex; align-items:center; font-size:10px; font-weight:600; padding:2px 7px; border-radius:4px; font-family:'Geist Mono',monospace; letter-spacing:.02em; }
 .tag-green { background:var(--green-dim); color:var(--green); }

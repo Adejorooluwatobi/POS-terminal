@@ -123,6 +123,27 @@ export class POSService {
     }
   }
 
+  setQty(idx: number, qty: number) {
+    const validQty = Math.max(1, Math.floor(qty) || 1);
+    this.cart.update(prev => {
+      const next = [...prev];
+      if (next[idx]) {
+        next[idx] = { ...next[idx], qty: validQty };
+      }
+      return next;
+    });
+  }
+
+  updateQty(idx: number, delta: number) {
+    this.cart.update(prev => {
+      const next = [...prev];
+      if (next[idx]) {
+        next[idx] = { ...next[idx], qty: Math.max(1, next[idx].qty + delta) };
+      }
+      return next;
+    });
+  }
+
   addToCart(productId: string | number, overrideQty?: number, unit: 'Single' | 'Roll' | 'Pack' = 'Single') {
     const p = this.products().find(x => x.id === productId);
     if (!p) return;
@@ -135,18 +156,21 @@ export class POSService {
     if (unit === 'Roll' && p.rollPrice) price = p.rollPrice;
     if (unit === 'Pack' && p.packPrice) price = p.packPrice;
 
+    let targetIdx = -1;
     this.cart.update(prev => {
       // Find item with same ID AND same unit
-      const existing = prev.find(i => i.id === productId && i.unit === unit);
-      if (existing) {
-        existing.qty += qty;
+      const existingIdx = prev.findIndex(i => i.id === productId && i.unit === unit);
+      if (existingIdx > -1) {
+        prev[existingIdx].qty += qty;
+        targetIdx = existingIdx;
         return [...prev];
       } else {
+        targetIdx = prev.length;
         return [...prev, { ...p, price, qty, discount: 0, unit }];
       }
     });
 
-    this.selectedItemIdx.set(this.cart().length - 1);
+    this.selectedItemIdx.set(targetIdx >= 0 ? targetIdx : this.cart().length - 1);
   }
 
   async processBarcode(barcode: string): Promise<Product | null> {
