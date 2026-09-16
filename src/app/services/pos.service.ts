@@ -9,6 +9,10 @@ import { ProductService } from './product.service';
 import { CustomerService } from './customer.service';
 import { TransactionService } from './transaction.service';
 import { CouponService, Coupon } from './coupon.service';
+import { OfflineTransactionService } from './offline-transaction.service';
+import { SyncService } from './sync.service';
+import { ToastService } from './toast.service';
+import { db } from '../database/app-db';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -21,6 +25,9 @@ export class POSService {
   private customerService = inject(CustomerService);
   private transactionService = inject(TransactionService);
   private couponService = inject(CouponService);
+  private offlineDb = inject(OfflineTransactionService);
+  private syncService = inject(SyncService);
+  private toast = inject(ToastService);
   products = signal<Product[]>(PRODUCTS);
   customers = signal<Customer[]>(CUSTOMERS);
   cart = signal<CartItem[]>([]);
@@ -86,6 +93,7 @@ export class POSService {
 
   constructor() {
     this.fetchInitialData();
+    this.loadSessionStats();
   }
 
   async fetchInitialData() {
@@ -95,31 +103,122 @@ export class POSService {
     try {
       // Fetch Products
       try {
-        const prods = await firstValueFrom(this.productService.getProducts());
-        if (prods && Array.isArray(prods) && prods.length > 0) {
-          this.products.set(prods);
+        if (navigator.onLine) {
+          try {
+            const prods = await firstValueFrom(this.productService.getProducts());
+            if (prods && Array.isArray(prods) && prods.length > 0) {
+              this.products.set(prods);
+              await db.products.clear();
+              await db.products.bulkPut(prods);
+            }
+          } catch (e) {
+            console.warn('Failed to fetch products from API, loaded offline cache');
+            const cached = await db.products.toArray();
+            if (cached.length) this.products.set(cached);
+            else this.products.set([]);
+          }
         } else {
-          this.products.set(PRODUCTS);
+          const cached = await db.products.toArray();
+          if (cached.length) this.products.set(cached);
+          else this.products.set([]);
         }
-      } catch (e) {
-        console.warn('Failed to fetch products from API, loaded default catalog');
-        this.products.set(PRODUCTS);
+      } catch (err) {
+        console.error('Local DB products error', err);
       }
 
       // Fetch Customers
       try {
-        const custs = await firstValueFrom(this.customerService.getCustomers());
-        if (custs && Array.isArray(custs) && custs.length > 0) {
-          this.customers.set(custs);
+        if (navigator.onLine) {
+          try {
+            const custs = await firstValueFrom(this.customerService.getCustomers());
+            if (custs && Array.isArray(custs) && custs.length > 0) {
+              this.customers.set(custs);
+              await db.customers.clear();
+              await db.customers.bulkPut(custs);
+            }
+          } catch (e) {
+            console.warn('Failed to fetch customers from API, loaded offline cache');
+            const cached = await db.customers.toArray();
+            if (cached.length) this.customers.set(cached);
+            else this.customers.set([]);
+          }
         } else {
-          this.customers.set(CUSTOMERS);
+          const cached = await db.customers.toArray();
+          if (cached.length) this.customers.set(cached);
+          else this.customers.set([]);
         }
-      } catch (e) {
-        console.warn('Failed to fetch customers from API, loaded default customer list');
-        this.customers.set(CUSTOMERS);
+      } catch (err) {
+        console.error('Local DB customers error', err);
       }
     } catch (error) {
       console.error('General data fetch error:', error);
+    }
+  }
+
+  async loadSessionStats() {
+    const staff = this.auth.currentStaff();
+    if (!staff) return;
+
+    const isGuid = (val: any) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+    let realCashierId = staff.id;
+    if (!isGuid(realCashierId)) {
+      const token = localStorage.getItem('pos_token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload.sub && isGuid(payload.sub)) realCashierId = payload.sub;
+        } catch(e) {}
+      }
+    }
+    const cashierId = isGuid(realCashierId) ? realCashierId : '00000000-0000-0000-0000-000000000000';
+
+    try {
+      let totalRevenue = 0;
+      let count = 0;
+      
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      if (navigator.onLine) {
+        try {
+          const res = await firstValueFrom(this.transactionService.getTransactions(cashierId));
+          const list = res.items || res || [];
+          const todayBackendTxs = list.filter((t: any) => t.createdAt && t.createdAt.startsWith(todayStr));
+          
+          for (const tx of todayBackendTxs) {
+            if (tx.status === 2) continue; // Ignore refunded parent transactions
+            totalRevenue += tx.grandTotal;
+            count++;
+          }
+
+          const localTxs = await this.offlineDb.getTodayTransactions(cashierId);
+          for (const tx of localTxs) {
+            if (tx.synced) continue; // Already counted from backend
+            if (tx.status === 2) continue;
+            totalRevenue += tx.grandTotal;
+            count++;
+          }
+
+          this.sessionRevenue.set(totalRevenue);
+          this.sessionTxCount.set(count);
+          this.txCounter.set(Math.max(todayBackendTxs.length, localTxs.length) + 1);
+          return;
+        } catch (apiErr) {
+          console.warn('Failed to fetch session stats from API, falling back to local DB', apiErr);
+        }
+      }
+
+      // Offline Fallback
+      const txs = await this.offlineDb.getTodayTransactions(cashierId);
+      for (const tx of txs) {
+        if (tx.status === 2) continue; // Fix double-subtraction bug
+        totalRevenue += tx.grandTotal;
+        count++;
+      }
+      this.sessionRevenue.set(totalRevenue);
+      this.sessionTxCount.set(count);
+      this.txCounter.set(txs.length + 1);
+    } catch (e) {
+      console.error('Failed to load session stats', e);
     }
   }
 
@@ -175,7 +274,11 @@ export class POSService {
 
   async processBarcode(barcode: string): Promise<Product | null> {
     // 1. Try local cache first
-    let p = this.products().find(x => x.barcode === barcode || x.sku.toLowerCase() === barcode.toLowerCase());
+    let p = this.products().find(x => 
+      x.barcode === barcode || 
+      (x.barcodes && x.barcodes.includes(barcode)) || 
+      x.sku.toLowerCase() === barcode.toLowerCase()
+    );
     
     if (!p) {
       // 2. Try API lookup by barcode
@@ -189,6 +292,11 @@ export class POSService {
     if (p) {
       if (!this.products().find(x => x.id === p!.id)) {
         this.products.update(prev => [...prev, p!]);
+        try {
+          await db.products.put(p!);
+        } catch (dbErr) {
+          console.warn('Failed to cache scanned product', dbErr);
+        }
       }
       this.addToCart(p.id);
       this.addToRecentScanned(p);
@@ -237,7 +345,7 @@ export class POSService {
       items: [...this.cart()],
       customer: this.currentCustomer(),
       appliedPromo: this.appliedPromo(),
-      txNum: `LG01-${String(this.txCounter()).padStart(3, '0')}`
+      txNum: `INV-${Date.now().toString(36).toUpperCase()}-${String(this.txCounter()).padStart(3, '0')}`
     };
     this.heldTxs.update(h => [...h, held]);
     this.clearCart();
@@ -262,7 +370,7 @@ export class POSService {
     const storeId = localStorage.getItem('store_id') || staff.store || '';
 
     const tx: Transaction = {
-      txNum: `LG01-${String(this.txCounter()).padStart(3, '0')}`,
+      txNum: `INV-${Date.now().toString(36).toUpperCase()}-${String(this.txCounter()).padStart(3, '0')}`,
       items: [...this.cart()],
       customer: this.currentCustomer(),
       staff: staff,
@@ -280,12 +388,95 @@ export class POSService {
       date: new Date()
     };
 
-    // Send to API — log but don't block local receipt on failure
+    const generateUUID = () => {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+
+    const isGuid = (val: any) => {
+      if (typeof val !== 'string') return false;
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+    };
+
+    const sessionId = localStorage.getItem('till_session_id') || '00000000-0000-0000-0000-000000000000';
+    const txStoreId = tx.storeId;
+    
+    // Extract real Guid from token if staff.id is corrupted (e.g. employeeNo was stored instead)
+    let realCashierId = staff.id;
+    if (!isGuid(realCashierId)) {
+      const token = localStorage.getItem('pos_token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload.sub && isGuid(payload.sub)) realCashierId = payload.sub;
+        } catch(e) {}
+      }
+    }
+    const cashierId = isGuid(realCashierId) ? realCashierId : '00000000-0000-0000-0000-000000000000';
+    const customerId = tx.customer && isGuid(tx.customer.id?.toString()) ? tx.customer.id.toString() : undefined;
+
+    // Create an OfflineTransaction formatted object
+    const offlineTx = {
+      id: generateUUID(),
+      receiptNumber: tx.txNum,
+      sessionId: isGuid(sessionId) ? sessionId : '00000000-0000-0000-0000-000000000000',
+      storeId: isGuid(txStoreId) ? txStoreId : '00000000-0000-0000-0000-000000000000',
+      cashierId: cashierId,
+      customerId: customerId,
+      subtotal: tx.subtotal || 0,
+      discountTotal: (tx.couponDisc || 0) + (tx.giftCardDisc || 0),
+      taxTotal: tx.vat || 0,
+      grandTotal: tx.grand || 0,
+      amountPaid: tx.tender || 0,
+      changeGiven: tx.change || 0,
+      createdAt: tx.date.toISOString(),
+      completedAt: tx.date.toISOString(),
+      items: tx.items.map((i: any) => ({
+        id: generateUUID(),
+        variantId: i.variantId ? i.variantId : (isGuid(i.id?.toString()) ? i.id.toString() : undefined),
+        productName: i.name,
+        quantity: i.qty,
+        unitPrice: i.price,
+        originalPrice: i.price,
+        unitCost: i.cost || 0, // Fallback to 0 if no cost
+        discountAmount: i.discount,
+        taxRate: 7.5,
+        taxAmount: i.tax,
+        lineTotal: (i.price * i.qty) - i.discount
+      })),
+      payments: [{
+        id: generateUUID(),
+        method: method === 'CASH' ? 0 : 
+                method === 'CARD' ? 1 : 
+                method === 'MOBILE' ? 2 : 
+                method === 'GIFTCARD' ? 4 : 
+                method === 'SPLIT' ? 6 : 0, // Map to PaymentMethod enum
+        amount: tx.grand, // Actual required
+        amountTendered: tx.tender,
+        changeGiven: tx.change,
+        status: 1, // 1 = Approved (PaymentStatus enum)
+        processedAt: tx.date.toISOString()
+      }]
+    };
+
+    // Save to Offline DB and attempt background sync
     try {
-      await firstValueFrom(this.transactionService.createTransaction(tx));
-      console.log('Transaction synced to cloud successfully');
-    } catch (error: any) {
-      console.error('Failed to sync transaction to cloud', error?.error || error);
+      await this.offlineDb.saveTransaction(offlineTx as any);
+      
+      // Show friendly offline or success message
+      if (!navigator.onLine) {
+        this.toast.info('Transaction queued securely! It will automatically sync when connection returns.');
+      } else {
+        this.toast.success('Transaction Completed!');
+      }
+
+      // Fire and forget sync attempt
+      this.syncService.syncNow();
+    } catch (error) {
+      console.error('Offline DB save failed', error);
+      this.toast.error('Failed to save transaction locally. Please check storage space.');
     }
 
     this.lastTx.set(tx);
@@ -293,5 +484,63 @@ export class POSService {
     this.sessionTxCount.update(s => s + 1);
     this.txCounter.update(c => c + 1);
     this.clearCart();
+  }
+  async refundTransaction(originalTx: any) {
+    const generateUUID = () => {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+
+    const refundTx = {
+      ...originalTx,
+      id: generateUUID(),
+      receiptNumber: `REF-${Date.now().toString(36).toUpperCase()}-${String(this.txCounter()).padStart(3, '0')}`,
+      subtotal: -Math.abs(originalTx.subtotal),
+      discountTotal: -Math.abs(originalTx.discountTotal),
+      taxTotal: -Math.abs(originalTx.taxTotal),
+      grandTotal: -Math.abs(originalTx.grandTotal),
+      amountPaid: -Math.abs(originalTx.amountPaid),
+      changeGiven: 0,
+      createdAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+      voidRefId: originalTx.id,
+      status: 1, // The refund itself is completed
+      synced: false,
+      items: originalTx.items.map((i: any) => ({
+        ...i,
+        id: generateUUID(),
+        quantity: -Math.abs(i.quantity),
+        discountAmount: -Math.abs(i.discountAmount),
+        taxAmount: -Math.abs(i.taxAmount),
+        lineTotal: -Math.abs(i.lineTotal)
+      })),
+      payments: originalTx.payments.map((p: any) => ({
+        ...p,
+        id: generateUUID(),
+        amount: -Math.abs(p.amount),
+        amountTendered: -Math.abs(p.amountTendered || p.amount),
+        changeGiven: 0,
+        processedAt: new Date().toISOString()
+      }))
+    };
+
+    try {
+      await this.offlineDb.saveTransaction(refundTx as any);
+      if (!navigator.onLine) {
+        this.toast.info('Refund queued securely!');
+      } else {
+        this.toast.success('Refund Completed!');
+      }
+      this.syncService.syncNow();
+    } catch (error) {
+      console.error('Refund save failed', error);
+      this.toast.error('Failed to process refund locally.');
+    }
+    
+    this.sessionRevenue.update(s => s - Math.abs(originalTx.grandTotal));
+    this.sessionTxCount.update(s => s + 1);
+    this.txCounter.update(c => c + 1);
   }
 }

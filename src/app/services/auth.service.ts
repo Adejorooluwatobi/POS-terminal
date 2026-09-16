@@ -79,7 +79,7 @@ export class AuthService {
         localStorage.setItem('pos_token', res.token);
         // Map API response to Staff model
         const staff: Staff = {
-          id: id,
+          id: res.userId || id, // Important: This MUST be the backend GUID (res.userId)
           name: res.name || 'Staff',
           initials: (res.name || 'S').split(' ').map((n:any)=>n[0]).join(''),
           role: (res.role || 'CASHIER').toUpperCase() as any,

@@ -9,8 +9,9 @@ import { Transaction } from '../models/transaction.model';
 export class TransactionService {
   private api = inject(ApiService);
 
-  getTransactions(): Observable<Transaction[]> {
-    return this.api.get<Transaction[]>('/api/transactions');
+  getTransactions(cashierId?: string): Observable<any> {
+    const query = cashierId ? `?cashierId=${cashierId}&page=1&size=100` : '?page=1&size=100';
+    return this.api.get<any>(`/api/transactions${query}`);
   }
 
   getTransactionById(id: string): Observable<Transaction> {

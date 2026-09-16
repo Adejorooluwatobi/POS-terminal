@@ -34,7 +34,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
 
-      notify.error(errorMessage);
+      // Suppress error toast for background sync requests
+      if (!req.url.includes('/transactions/sync')) {
+        notify.error(errorMessage);
+      }
       return throwError(() => error);
     })
   );

@@ -4,6 +4,7 @@ export interface Product {
   name: string;
   sku: string;
   barcode: string;
+  barcodes?: string[];
   cat: string;
   price: number;
   cost: number;

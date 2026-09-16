@@ -45,6 +45,7 @@
       Till: {{ tillService.currentSession() ? 'Open' : 'Closed' }}
     </button>
     <button (click)="openSessionSummary()" class="btn btn-ghost btn-xs">Summary</button>
+    <button (click)="clickHistory.emit()" class="btn btn-ghost btn-xs">History</button>
     <button (click)="clickGiftCard.emit()" class="btn btn-ghost btn-xs">Gift Card</button>
     <button (click)="clickCalculator.emit()" class="btn btn-ghost btn-xs" title="Calculator">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
