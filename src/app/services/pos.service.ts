@@ -433,19 +433,26 @@ export class POSService {
       changeGiven: tx.change || 0,
       createdAt: tx.date.toISOString(),
       completedAt: tx.date.toISOString(),
-      items: tx.items.map((i: any) => ({
-        id: generateUUID(),
-        variantId: i.variantId ? i.variantId : (isGuid(i.id?.toString()) ? i.id.toString() : undefined),
-        productName: i.name,
-        quantity: i.qty,
-        unitPrice: i.price,
-        originalPrice: i.price,
-        unitCost: i.cost || 0, // Fallback to 0 if no cost
-        discountAmount: i.discount,
-        taxRate: 7.5,
-        taxAmount: i.tax,
-        lineTotal: (i.price * i.qty) - i.discount
-      })),
+      items: tx.items.map((i: any) => {
+        let cf = 1;
+        if (i.unit === 'Pack') cf = i.singlesPerPack || 1;
+        if (i.unit === 'Roll') cf = i.singlesPerRoll || 1;
+        
+        return {
+          id: generateUUID(),
+          variantId: i.variantId ? i.variantId : (isGuid(i.id?.toString()) ? i.id.toString() : undefined),
+          productName: i.name,
+          quantity: i.qty,
+          baseQuantity: (i.qty || 1) * cf,
+          unitPrice: i.price,
+          originalPrice: i.price,
+          unitCost: i.cost || 0, // Fallback to 0 if no cost
+          discountAmount: i.discount,
+          taxRate: 7.5,
+          taxAmount: i.tax,
+          lineTotal: (i.price * i.qty) - i.discount
+        };
+      }),
       payments: [{
         id: generateUUID(),
         method: method === 'CASH' ? 0 : 

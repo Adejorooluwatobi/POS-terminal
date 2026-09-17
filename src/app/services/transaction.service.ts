@@ -34,17 +34,26 @@ export class TransactionService {
       console.error('CRITICAL: Attempting to create transaction with empty StoreId');
     }
 
-    const items = (tx.items || []).map((item: any) => ({
-      variantId: item.variantId || (item.id === -99 ? '00000000-0000-0000-0000-000000000000' : item.id),
-      quantity: item.qty,
-      unitPrice: item.price,
-      taxRate: item.tax || 0,
-      name: item.name,
-      isGiftCardSale: item.id === -99,
-      giftCardNumber: item.id === -99 ? item.sku : null,
-      giftCardPin: item.id === -99 ? item.pin : null,
-      giftCardOldPin: item.id === -99 ? item.oldPin : null
-    }));
+    const items = (tx.items || []).map((item: any) => {
+      let cf = 1;
+      if (item.unit === 'Pack') cf = item.singlesPerPack || 1;
+      if (item.unit === 'Roll') cf = item.singlesPerRoll || 1;
+      const baseQty = (item.qty || 1) * cf;
+
+      return {
+        variantId: item.variantId || (item.id === -99 ? '00000000-0000-0000-0000-000000000000' : item.id),
+        quantity: item.qty,
+        unitPrice: item.price,
+        taxRate: item.tax || 0,
+        name: item.name,
+        unitOfMeasure: item.unit || 'Single',
+        baseQuantity: baseQty,
+        isGiftCardSale: item.id === -99,
+        giftCardNumber: item.id === -99 ? item.sku : null,
+        giftCardPin: item.id === -99 ? item.pin : null,
+        giftCardOldPin: item.id === -99 ? item.oldPin : null
+      };
+    });
 
     const methodMap: Record<string, string> = {
       'CASH':     'Cash',
