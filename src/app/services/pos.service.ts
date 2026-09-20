@@ -74,7 +74,7 @@ export class POSService {
     return this.redeemedGiftCards().reduce((s, gc) => s + gc.amount, 0);
   });
 
-  totalDiscount = computed(() => this.itemTotalDiscount() + this.couponDiscount() + this.giftCardDiscount());
+  totalDiscount = computed(() => this.itemTotalDiscount() + this.couponDiscount());
 
   taxableAmount = computed(() => {
     const taxableItemsSub = this.cart()
@@ -87,8 +87,11 @@ export class POSService {
 
   grandTotal = computed(() => {
     const afterCoupon = Math.max(0, this.subtotal() - this.couponDiscount());
-    const afterTax = afterCoupon + this.vat();
-    return Math.max(0, afterTax - this.giftCardDiscount());
+    return afterCoupon + this.vat();
+  });
+
+  amountDue = computed(() => {
+    return Math.max(0, this.grandTotal() - this.giftCardDiscount());
   });
 
   constructor() {
@@ -368,6 +371,9 @@ export class POSService {
     if (!staff) return;
 
     const storeId = localStorage.getItem('store_id') || staff.store || '';
+    const gcPaid = this.giftCardDiscount();
+    const effectiveMethod = gcPaid > 0 && this.amountDue() === 0 ? 'GIFTCARD' : (gcPaid > 0 ? 'SPLIT' : method);
+    const totalTendered = method === 'GIFTCARD' ? gcPaid : (tendered + gcPaid);
 
     const tx: Transaction = {
       txNum: `INV-${Date.now().toString(36).toUpperCase()}-${String(this.txCounter()).padStart(3, '0')}`,
@@ -377,12 +383,12 @@ export class POSService {
       storeId,
       subtotal: this.subtotal(),
       couponDisc: this.couponDiscount(),
-      giftCardDisc: this.giftCardDiscount(),
+      giftCardDisc: gcPaid,
       vat: this.vat(),
       grand: this.grandTotal(),
-      tender: tendered,
-      change: Math.max(0, tendered - this.grandTotal()),
-      method: method,
+      tender: totalTendered,
+      change: Math.max(0, tendered - this.amountDue()),
+      method: effectiveMethod,
       promotionId: this.appliedPromo()?.promotionId,
       redeemedGiftCards: this.redeemedGiftCards(),
       date: new Date()
@@ -417,6 +423,35 @@ export class POSService {
     const cashierId = isGuid(realCashierId) ? realCashierId : '00000000-0000-0000-0000-000000000000';
     const customerId = tx.customer && isGuid(tx.customer.id?.toString()) ? tx.customer.id.toString() : undefined;
 
+    const paymentsList: any[] = [];
+    if (gcPaid > 0) {
+      paymentsList.push({
+        id: generateUUID(),
+        method: 4, // 4 = GiftCard
+        amount: Math.min(gcPaid, tx.grand),
+        amountTendered: gcPaid,
+        changeGiven: 0,
+        status: 1, // 1 = Approved
+        processedAt: tx.date.toISOString()
+      });
+    }
+    const cashCardAmount = Math.max(0, tx.grand - gcPaid);
+    if (cashCardAmount > 0 || paymentsList.length === 0) {
+      paymentsList.push({
+        id: generateUUID(),
+        method: method === 'CASH' ? 0 : 
+                method === 'CARD' ? 1 : 
+                method === 'MOBILE' ? 2 : 
+                method === 'GIFTCARD' ? 4 : 
+                method === 'SPLIT' ? 6 : 0,
+        amount: cashCardAmount,
+        amountTendered: tendered,
+        changeGiven: tx.change,
+        status: 1,
+        processedAt: tx.date.toISOString()
+      });
+    }
+
     // Create an OfflineTransaction formatted object
     const offlineTx = {
       id: generateUUID(),
@@ -426,10 +461,10 @@ export class POSService {
       cashierId: cashierId,
       customerId: customerId,
       subtotal: tx.subtotal || 0,
-      discountTotal: (tx.couponDisc || 0) + (tx.giftCardDisc || 0),
+      discountTotal: tx.couponDisc || 0,
       taxTotal: tx.vat || 0,
       grandTotal: tx.grand || 0,
-      amountPaid: tx.tender || 0,
+      amountPaid: totalTendered || 0,
       changeGiven: tx.change || 0,
       createdAt: tx.date.toISOString(),
       completedAt: tx.date.toISOString(),
@@ -453,19 +488,7 @@ export class POSService {
           lineTotal: (i.price * i.qty) - i.discount
         };
       }),
-      payments: [{
-        id: generateUUID(),
-        method: method === 'CASH' ? 0 : 
-                method === 'CARD' ? 1 : 
-                method === 'MOBILE' ? 2 : 
-                method === 'GIFTCARD' ? 4 : 
-                method === 'SPLIT' ? 6 : 0, // Map to PaymentMethod enum
-        amount: tx.grand, // Actual required
-        amountTendered: tx.tender,
-        changeGiven: tx.change,
-        status: 1, // 1 = Approved (PaymentStatus enum)
-        processedAt: tx.date.toISOString()
-      }]
+      payments: paymentsList
     };
 
     // Save to Offline DB and attempt background sync

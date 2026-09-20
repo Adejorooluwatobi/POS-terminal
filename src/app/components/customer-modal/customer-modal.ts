@@ -60,7 +60,7 @@ export class CustomerModal {
   }
 
   onSelect(c: Customer) {
-    this.pos.assignCustomer(c.id);
+    this.pos.assignCustomer(c.id as any);
     this.closeModal();
   }
 

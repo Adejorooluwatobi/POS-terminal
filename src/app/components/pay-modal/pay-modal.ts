@@ -31,16 +31,16 @@ export class PayModal {
 
   constructor() {
     effect(() => {
-      // Whenever grand total changes, update defaults if not in CASH mode
+      // Whenever amount due changes, update defaults if not in CASH mode
       if (this.payMethod() !== 'CASH') {
-        this.tendered.set(this.pos.grandTotal());
-        this.gcAmount.set(this.pos.grandTotal());
+        this.tendered.set(this.pos.amountDue());
+        this.gcAmount.set(this.pos.amountDue());
       }
     }, { allowSignalWrites: true });
   }
 
   change = computed(() => {
-    return Math.max(0, this.tendered() - this.pos.grandTotal());
+    return Math.max(0, this.tendered() - this.pos.amountDue());
   });
 
   fmt(n: number) {
@@ -50,8 +50,8 @@ export class PayModal {
   selPayMethod(m: 'CASH' | 'CARD' | 'MOBILE' | 'SPLIT' | 'GIFTCARD') {
     this.payMethod.set(m);
     if (m !== 'CASH') {
-        this.tendered.set(this.pos.grandTotal());
-        this.gcAmount.set(this.pos.grandTotal());
+        this.tendered.set(this.pos.amountDue());
+        this.gcAmount.set(this.pos.amountDue());
     }
   }
 
@@ -60,7 +60,7 @@ export class PayModal {
   }
 
   setExact() {
-    this.tendered.set(this.pos.grandTotal());
+    this.tendered.set(this.pos.amountDue());
   }
 
   async redeemGiftCard() {
@@ -89,7 +89,7 @@ export class PayModal {
       this.gcNumber.set('');
       this.gcPin.set('');
       
-      if (this.pos.grandTotal() > 0) {
+      if (this.pos.amountDue() > 0) {
         this.selPayMethod('CASH');
       } else {
         this.processPayment();
@@ -102,7 +102,7 @@ export class PayModal {
   }
 
   async processPayment() {
-    const g = this.pos.grandTotal();
+    const g = this.pos.amountDue();
     if (this.payMethod() === 'CASH' && this.tendered() < g) {
       alert('Amount tendered is insufficient');
       return;
