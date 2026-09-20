@@ -77,6 +77,13 @@ export class AuthService {
       
       if (res && res.token) {
         localStorage.setItem('pos_token', res.token);
+        if (res.storeName) localStorage.setItem('store_name', res.storeName);
+        if (res.storeAddress) localStorage.setItem('store_address', res.storeAddress);
+        if (res.storeCity) localStorage.setItem('store_city', res.storeCity);
+        if (res.storePhone) localStorage.setItem('store_phone', res.storePhone);
+        if (res.tenantEmail) localStorage.setItem('tenant_email', res.tenantEmail);
+        if (res.businessName) localStorage.setItem('business_name', res.businessName);
+
         // Map API response to Staff model
         const staff: Staff = {
           id: res.userId || id, // Important: This MUST be the backend GUID (res.userId)
@@ -86,7 +93,12 @@ export class AuthService {
           pin: pin,
           store: localStorage.getItem('store_id') || res.storeId || sId,
           color: '#00c2ff',
-          businessName: res.businessName
+          businessName: res.businessName,
+          storeName: res.storeName,
+          storeAddress: res.storeAddress,
+          storeCity: res.storeCity,
+          storePhone: res.storePhone,
+          tenantEmail: res.tenantEmail
         };
         this.currentStaff.set(staff);
         localStorage.setItem('currentStaff', JSON.stringify(staff));

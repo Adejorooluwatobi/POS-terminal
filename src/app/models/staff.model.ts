@@ -7,4 +7,10 @@ export interface Staff {
   store: string;
   color: string;
   businessName?: string;
+  storeName?: string;
+  storeAddress?: string;
+  storeCity?: string;
+  storePhone?: string;
+  tenantEmail?: string;
 }
+

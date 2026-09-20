@@ -12,6 +12,8 @@ import { CouponService, Coupon } from './coupon.service';
 import { OfflineTransactionService } from './offline-transaction.service';
 import { SyncService } from './sync.service';
 import { ToastService } from './toast.service';
+import { StoreService } from './store.service';
+import { TerminalService } from './terminal.service';
 import { db } from '../database/app-db';
 import { firstValueFrom } from 'rxjs';
 
@@ -28,6 +30,8 @@ export class POSService {
   private offlineDb = inject(OfflineTransactionService);
   private syncService = inject(SyncService);
   private toast = inject(ToastService);
+  private storeService = inject(StoreService);
+  private terminalService = inject(TerminalService);
   products = signal<Product[]>(PRODUCTS);
   customers = signal<Customer[]>(CUSTOMERS);
   cart = signal<CartItem[]>([]);
@@ -55,6 +59,56 @@ export class POSService {
     }
   });
   businessName = computed(() => this.auth.currentStaff()?.businessName || 'RETAILOS STORE');
+
+  currentStore = computed(() => this.storeService.currentStore());
+
+  storeName = computed(() => {
+    return this.currentStore()?.name || 
+           this.auth.currentStaff()?.storeName || 
+           localStorage.getItem('store_name') || 
+           (this.terminalService.pairedTerminal() as any)?.storeName || 
+           '';
+  });
+
+  storeAddress = computed(() => {
+    const store = this.currentStore();
+    if (store && (store.address || store.city)) {
+      const parts = [store.address, store.city, store.state].filter(Boolean);
+      return parts.join(', ');
+    }
+    const staff = this.auth.currentStaff();
+    if (staff && (staff.storeAddress || staff.storeCity)) {
+      const parts = [staff.storeAddress, staff.storeCity].filter(Boolean);
+      return parts.join(', ');
+    }
+    const localAddr = localStorage.getItem('store_address');
+    if (localAddr) {
+      const localCity = localStorage.getItem('store_city');
+      return localCity ? `${localAddr}, ${localCity}` : localAddr;
+    }
+    const term = this.terminalService.pairedTerminal() as any;
+    if (term && (term.storeAddress || term.storeCity)) {
+      const parts = [term.storeAddress, term.storeCity].filter(Boolean);
+      return parts.join(', ');
+    }
+    return '';
+  });
+
+  storePhone = computed(() => {
+    return this.currentStore()?.phone || 
+           this.auth.currentStaff()?.storePhone || 
+           localStorage.getItem('store_phone') || 
+           (this.terminalService.pairedTerminal() as any)?.storePhone || 
+           '';
+  });
+
+  tenantEmail = computed(() => {
+    return this.currentStore()?.tenantEmail || 
+           this.auth.currentStaff()?.tenantEmail || 
+           localStorage.getItem('tenant_email') || 
+           (this.terminalService.pairedTerminal() as any)?.tenantEmail || 
+           '';
+  });
 
 
   subtotal = computed(() => {
@@ -152,6 +206,23 @@ export class POSService {
         }
       } catch (err) {
         console.error('Local DB customers error', err);
+      }
+
+      // Fetch Store Details
+      try {
+        const storeId = localStorage.getItem('store_id') || this.auth.currentStaff()?.store;
+        if (storeId && navigator.onLine) {
+          try {
+            const storeData = await firstValueFrom(this.storeService.getStore(storeId));
+            if (storeData) {
+              this.storeService.setStore(storeData);
+            }
+          } catch (e) {
+            console.warn('Could not fetch store from API, using cached store details');
+          }
+        }
+      } catch (err) {
+        console.error('Store details fetch error', err);
       }
     } catch (error) {
       console.error('General data fetch error:', error);
@@ -372,8 +443,10 @@ export class POSService {
 
     const storeId = localStorage.getItem('store_id') || staff.store || '';
     const gcPaid = this.giftCardDiscount();
-    const effectiveMethod = gcPaid > 0 && this.amountDue() === 0 ? 'GIFTCARD' : (gcPaid > 0 ? 'SPLIT' : method);
-    const totalTendered = method === 'GIFTCARD' ? gcPaid : (tendered + gcPaid);
+    const isGiftCardOnly = (gcPaid > 0 && this.amountDue() === 0) || method === 'GIFTCARD';
+    const effectiveMethod = isGiftCardOnly ? 'GIFTCARD' : (gcPaid > 0 ? 'SPLIT' : method);
+    const totalTendered = isGiftCardOnly ? gcPaid : (tendered + gcPaid);
+    const computedChange = isGiftCardOnly ? 0 : Math.max(0, tendered - this.amountDue());
 
     const tx: Transaction = {
       txNum: `INV-${Date.now().toString(36).toUpperCase()}-${String(this.txCounter()).padStart(3, '0')}`,
@@ -387,7 +460,7 @@ export class POSService {
       vat: this.vat(),
       grand: this.grandTotal(),
       tender: totalTendered,
-      change: Math.max(0, tendered - this.amountDue()),
+      change: computedChange,
       method: effectiveMethod,
       promotionId: this.appliedPromo()?.promotionId,
       redeemedGiftCards: this.redeemedGiftCards(),
@@ -445,7 +518,7 @@ export class POSService {
                 method === 'GIFTCARD' ? 4 : 
                 method === 'SPLIT' ? 6 : 0,
         amount: cashCardAmount,
-        amountTendered: tendered,
+        amountTendered: isGiftCardOnly ? 0 : tendered,
         changeGiven: tx.change,
         status: 1,
         processedAt: tx.date.toISOString()

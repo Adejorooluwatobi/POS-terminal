@@ -7,9 +7,11 @@
     
     <div *ngIf="pos.lastTx() as tx" class="mono thin-scroll" style="padding:16px;font-size:11px;line-height:1.7;max-height:420px;overflow-y:auto;background:var(--surface2);border-radius:10px;margin:12px;">
       <div style="text-align:center;margin-bottom:15px;color:var(--text);">
-        <div style="font-size:14px;font-weight:700;letter-spacing:-0.02em;">{{ pos.businessName() | uppercase }}</div>
-        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">Premium Retail Experience</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:4px;">23 Adeola Hopewell, VI, Lagos</div>
+        <div style="font-size:14px;font-weight:700;letter-spacing:-0.02em;">{{ (pos.storeName() || pos.businessName()) | uppercase }}</div>
+        <div *ngIf="pos.storeName() && pos.businessName() && pos.storeName().toUpperCase() !== pos.businessName().toUpperCase()" style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">{{ pos.businessName() }}</div>
+        <div *ngIf="pos.storeAddress()" style="font-size:10px;color:var(--text3);margin-top:4px;">{{ pos.storeAddress() }}</div>
+        <div *ngIf="pos.storePhone()" style="font-size:10px;color:var(--text3);margin-top:2px;">TEL: {{ pos.storePhone() }}</div>
+        <div *ngIf="pos.tenantEmail()" style="font-size:10px;color:var(--text3);margin-top:2px;">EMAIL: {{ pos.tenantEmail() }}</div>
       </div>
       
       <div style="border-top:1px dashed var(--border);padding-top:10px;margin-bottom:10px;">
@@ -59,7 +61,7 @@
           <span style="color:var(--text3);">{{ tx.method }} TENDERED</span>
           <span>{{ fmt(tx.method === 'GIFTCARD' ? tx.tender : (tx.tender - (tx.giftCardDisc || 0))) }}</span>
         </div>
-        <div *ngIf="tx.change > 0" style="display:flex;justify-content:space-between;margin-top:2px;color:var(--amber);">
+        <div *ngIf="tx.change > 0 && tx.method !== 'GIFTCARD'" style="display:flex;justify-content:space-between;margin-top:2px;color:var(--amber);">
           <span>CHANGE</span>
           <span>{{ fmt(tx.change) }}</span>
         </div>
@@ -67,7 +69,8 @@
       
       <div style="text-align:center;margin-top:15px;padding-top:10px;border-top:1px dashed var(--border);">
         <div style="font-size:24px;letter-spacing:1px;color:var(--text3);margin-bottom:5px;">||| | || ||| | |||</div>
-        <div style="font-size:9px;color:var(--text3);">TX:{{ tx.txNum }} · THANK YOU</div>
+        <div style="font-size:9px;color:var(--text3);">TX:{{ tx.txNum }} · THANK YOU FOR YOUR PATRONAGE</div>
+        <div *ngIf="pos.tenantEmail()" style="font-size:9px;color:var(--text3);margin-top:2px;">{{ pos.tenantEmail() }}</div>
       </div>
     </div>
     
