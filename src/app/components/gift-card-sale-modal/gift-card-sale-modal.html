@@ -88,6 +88,11 @@
             <div style="display:flex;flex-direction:column;gap:10px;">
               <div style="font-size:12px;color:var(--text2);">Card Found</div>
               <div class="mono" style="font-size:16px;color:#fff;">{{ searchedCard().cardNumber }}</div>
+              @if (searchedCard().customerName) {
+                <div style="font-size:12px; color:var(--green); font-weight:700; background:rgba(16,185,129,0.1); padding:4px 8px; border-radius:6px;">
+                  👤 Linked: {{ searchedCard().customerName }} (⭐ {{ searchedCard().customerPointsBalance || 0 }} pts)
+                </div>
+              }
               <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);padding:10px;border-radius:6px;border:1px solid var(--border);">
                 <span style="font-size:12px;color:var(--text2);">Current Balance</span>
                 <span style="font-size:14px;font-weight:700;color:var(--accent);">₦{{ searchedCard().balance }}</span>

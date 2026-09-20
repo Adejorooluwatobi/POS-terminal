@@ -76,8 +76,13 @@ export class PayModal {
     console.log('Redeeming gift card for store:', storeId);
     try {
       const amountToRedeem = this.gcAmount();
-      await firstValueFrom(this.gcService.redeem(this.gcNumber(), amountToRedeem, this.gcPin()));
+      const cardInfo = await firstValueFrom(this.gcService.redeem(this.gcNumber(), amountToRedeem, this.gcPin()));
       this.toast.success('Gift card redeemed successfully!');
+      
+      if (cardInfo?.customerId && !this.pos.currentCustomer()) {
+        this.pos.assignCustomer(cardInfo.customerId);
+        this.toast.show(`Attached customer: ${cardInfo.customerName}`, 'info');
+      }
       
       this.pos.redeemedGiftCards.update(prev => [...prev, { cardNumber: this.gcNumber(), amount: amountToRedeem }]);
       

@@ -91,7 +91,13 @@ export class GiftCardSaleModal {
         this.pin.set('');
         this.oldPin.set('');
         this.amount.set(0);
-        this.toast.show(`Found Card: ${res.cardNumber}`, 'success');
+        
+        if (res.customerId && !this.pos.currentCustomer()) {
+          this.pos.assignCustomer(res.customerId);
+          this.toast.show(`Cardholder attached: ${res.customerName}`, 'info');
+        } else {
+          this.toast.show(`Found Card: ${res.cardNumber}`, 'success');
+        }
       }
     } catch (e) {
       this.toast.show('Card not found', 'error');
