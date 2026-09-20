@@ -105,9 +105,17 @@
         <span style="font-size:15px;font-weight:700;">TOTAL</span>
         <span class="mono" style="font-size:22px;font-weight:700;color:var(--green);">{{ fmt(pos.grandTotal()) }}</span>
       </div>
+      <div *ngIf="pos.giftCardDiscount() > 0" style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
+        <span style="font-size:11px;color:var(--accent);">Gift Card Applied</span>
+        <span class="mono" style="font-size:11px;color:var(--accent);">-{{ fmt(pos.giftCardDiscount()) }}</span>
+      </div>
+      <div *ngIf="pos.giftCardDiscount() > 0" style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text);">Balance Due</span>
+        <span class="mono" style="font-size:14px;font-weight:700;color:var(--amber);">{{ fmt(pos.amountDue()) }}</span>
+      </div>
     </div>
     <button (click)="onOpenPayModal()" class="btn btn-accent" style="width:100%;justify-content:center;font-size:14px;font-weight:700;padding:11px;border-radius:8px;" [disabled]="pos.cart().length === 0">
-      Charge {{ fmt(pos.grandTotal()) }}
+      {{ pos.amountDue() === 0 && pos.giftCardDiscount() > 0 ? 'Complete TX (Paid)' : ('Charge ' + fmt(pos.amountDue())) }}
     </button>
   </div>
 </div>

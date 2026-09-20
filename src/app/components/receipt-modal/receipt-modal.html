@@ -37,7 +37,31 @@
         <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">VAT (7.5%)</span><span>{{ fmt(tx.vat) }}</span></div>
         <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-top:6px;padding-top:6px;border-top:2px solid var(--border);">
           <span style="color:var(--text);">TOTAL</span>
-          <span style="color:var(--green);">{{ fmt(tx.grand) }}</span>
+          <span style="color:var(--green);">{{ fmt(tx.grand > 0 ? tx.grand : (tx.subtotal + (tx.vat || 0) - (tx.couponDisc || 0))) }}</span>
+        </div>
+      </div>
+
+      <!-- Payment Breakdown -->
+      <div style="border-top:1px dashed var(--border);padding-top:8px;margin-bottom:10px;font-size:11px;">
+        <div *ngIf="tx.giftCardDisc && tx.giftCardDisc > 0" style="margin-bottom:4px;">
+          <div style="display:flex;justify-content:space-between;font-weight:700;color:var(--accent);">
+            <span>PAID VIA GIFT CARD</span>
+            <span>{{ fmt(tx.giftCardDisc) }}</span>
+          </div>
+          <div *ngIf="tx.redeemedGiftCards && tx.redeemedGiftCards.length > 0">
+            <div *ngFor="let gc of tx.redeemedGiftCards" style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);padding-left:8px;">
+              <span>CARD: {{ gc.cardNumber }}</span>
+              <span>{{ fmt(gc.amount) }}</span>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="tx.method !== 'GIFTCARD' || (tx.tender - (tx.giftCardDisc || 0)) > 0" style="display:flex;justify-content:space-between;margin-top:2px;">
+          <span style="color:var(--text3);">{{ tx.method }} TENDERED</span>
+          <span>{{ fmt(tx.method === 'GIFTCARD' ? tx.tender : (tx.tender - (tx.giftCardDisc || 0))) }}</span>
+        </div>
+        <div *ngIf="tx.change > 0" style="display:flex;justify-content:space-between;margin-top:2px;color:var(--amber);">
+          <span>CHANGE</span>
+          <span>{{ fmt(tx.change) }}</span>
         </div>
       </div>
       
