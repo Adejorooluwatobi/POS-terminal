@@ -1,11 +1,22 @@
 <div style="width:240px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;padding:12px;height:100%;min-height:0;">
   
   <!-- Override / Qty -->
-  <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;">Qty / Override</div>
-  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;justify-content:flex-end;margin-bottom:12px;">
-    <span class="mono" style="font-size:20px;font-weight:700;color:var(--text);min-height:30px;line-height:1.2;">
-      {{ pos.numBuffer() || '—' }}
-    </span>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+    <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;">Qty / Override</div>
+    <div *ngIf="selectedItem() as item" class="mono text-accent" style="font-size:10px;font-weight:600;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" [title]="item.name + ' (' + item.unit + ')'">
+      {{ item.name }} ({{ item.unit }})
+    </div>
+  </div>
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <span style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;">Qty:</span>
+    <input type="text"
+           [value]="pos.numBuffer()"
+           (input)="onBufferInput($event)"
+           (keydown.enter)="onApplyQty()"
+           placeholder="—"
+           class="mono"
+           style="font-size:20px;font-weight:700;color:var(--text);text-align:right;width:120px;border:none;background:transparent;outline:none;padding:0;font-family:'Geist Mono',monospace;"
+           title="Type quantity or use keypad, then click Set Qty or press Enter">
   </div>
 
   <!-- Numpad -->
@@ -19,9 +30,9 @@
 
   <!-- Actions -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-    <button class="btn btn-ghost btn-sm" style="justify-content:center;color:var(--accent);" (click)="onApplyQty()">
+    <button class="btn btn-ghost btn-sm" style="justify-content:center;color:var(--accent);" (click)="onApplyQty()" title="Set quantity for selected product">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-      Qty
+      Set Qty
     </button>
     <button class="btn btn-ghost btn-sm" style="justify-content:center;color:var(--amber);" (click)="onManualDiscount()">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="9" y1="15" x2="15" y2="9"/><line x1="9" y1="9" x2="9" y2="9"/><line x1="15" y1="15" x2="15" y2="15"/></svg>

@@ -35,7 +35,11 @@ export class TerminalService {
             localStorage.setItem('terminal_data', JSON.stringify(res.terminal));
             localStorage.setItem('terminal_id', res.terminal.id);
             localStorage.setItem('store_id', res.terminal.storeId || '');
-            localStorage.setItem('store_name', res.terminal.name || '');
+            localStorage.setItem('store_name', res.terminal.storeName || res.terminal.name || '');
+            if (res.terminal.storeAddress) localStorage.setItem('store_address', res.terminal.storeAddress);
+            if (res.terminal.storeCity) localStorage.setItem('store_city', res.terminal.storeCity);
+            if (res.terminal.storePhone) localStorage.setItem('store_phone', res.terminal.storePhone);
+            if (res.terminal.tenantEmail) localStorage.setItem('tenant_email', res.terminal.tenantEmail);
             this.pairedTerminal.set(res.terminal);
           }
           this.isPaired.set(true);

@@ -83,6 +83,7 @@ export class ProductService {
       name: dto.name,
       sku: dto.masterSku || dto.sku || '',
       barcode: dto.barcodes && dto.barcodes.length > 0 ? dto.barcodes[0] : (dto.barcode || ''),
+      barcodes: dto.barcodes || [],
       cat: 'all',
       price: finalPrice,
       cost: dto.costPrice !== undefined ? dto.costPrice : dto.cost,

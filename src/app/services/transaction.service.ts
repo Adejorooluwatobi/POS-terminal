@@ -9,8 +9,9 @@ import { Transaction } from '../models/transaction.model';
 export class TransactionService {
   private api = inject(ApiService);
 
-  getTransactions(): Observable<Transaction[]> {
-    return this.api.get<Transaction[]>('/api/transactions');
+  getTransactions(cashierId?: string): Observable<any> {
+    const query = cashierId ? `?cashierId=${cashierId}&page=1&size=100` : '?page=1&size=100';
+    return this.api.get<any>(`/api/transactions${query}`);
   }
 
   getTransactionById(id: string): Observable<Transaction> {
@@ -33,17 +34,26 @@ export class TransactionService {
       console.error('CRITICAL: Attempting to create transaction with empty StoreId');
     }
 
-    const items = (tx.items || []).map((item: any) => ({
-      variantId: item.variantId || (item.id === -99 ? '00000000-0000-0000-0000-000000000000' : item.id),
-      quantity: item.qty,
-      unitPrice: item.price,
-      taxRate: item.tax || 0,
-      name: item.name,
-      isGiftCardSale: item.id === -99,
-      giftCardNumber: item.id === -99 ? item.sku : null,
-      giftCardPin: item.id === -99 ? item.pin : null,
-      giftCardOldPin: item.id === -99 ? item.oldPin : null
-    }));
+    const items = (tx.items || []).map((item: any) => {
+      let cf = 1;
+      if (item.unit === 'Pack') cf = item.singlesPerPack || 1;
+      if (item.unit === 'Roll') cf = item.singlesPerRoll || 1;
+      const baseQty = (item.qty || 1) * cf;
+
+      return {
+        variantId: item.variantId || (item.id === -99 ? '00000000-0000-0000-0000-000000000000' : item.id),
+        quantity: item.qty,
+        unitPrice: item.price,
+        taxRate: item.tax || 0,
+        name: item.name,
+        unitOfMeasure: item.unit || 'Single',
+        baseQuantity: baseQty,
+        isGiftCardSale: item.id === -99,
+        giftCardNumber: item.id === -99 ? item.sku : null,
+        giftCardPin: item.id === -99 ? item.pin : null,
+        giftCardOldPin: item.id === -99 ? item.oldPin : null
+      };
+    });
 
     const methodMap: Record<string, string> = {
       'CASH':     'Cash',

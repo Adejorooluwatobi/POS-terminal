@@ -14,6 +14,7 @@ import { SummaryModal } from '../../components/summary-modal/summary-modal';
 import { ToastContainer } from '../../components/toast-container/toast-container';
 import { CalculatorComponent } from '../../components/calculator/calculator.component';
 import { TillModalComponent } from '../../components/till-modal/till-modal';
+import { TransactionHistoryModal } from '../../components/transaction-history-modal/transaction-history-modal';
 import { POSService } from '../../services/pos.service';
 import { TillSessionService } from '../../services/till-session.service';
 import { ScannerService } from '../../services/scanner.service';
@@ -37,7 +38,8 @@ import { OnInit, OnDestroy } from '@angular/core';
     SummaryModal,
     ToastContainer,
     CalculatorComponent,
-    TillModalComponent
+    TillModalComponent,
+    TransactionHistoryModal
   ],
   templateUrl: './pos-terminal.html',
 })
@@ -63,6 +65,7 @@ export class POSTerminal implements OnInit, OnDestroy {
   showSummaryModal = signal(false);
   showCalculator = signal(false);
   showTillModal = signal(false);
+  showHistoryModal = signal(false);
 
   openPayModal() { this.showPayModal.set(true); }
   closePayModal() { this.showPayModal.set(false); }
@@ -92,6 +95,9 @@ export class POSTerminal implements OnInit, OnDestroy {
 
   openTillModal() { this.showTillModal.set(true); }
   closeTillModal() { this.showTillModal.set(false); }
+
+  openHistoryModal() { this.showHistoryModal.set(true); }
+  closeHistoryModal() { this.showHistoryModal.set(false); }
 
   startNewTransaction() {
     this.pos.clearCart();

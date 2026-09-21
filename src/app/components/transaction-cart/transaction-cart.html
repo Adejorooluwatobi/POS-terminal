@@ -34,7 +34,7 @@
     
     <!-- Items -->
     <ng-container *ngIf="pos.cart().length > 0">
-      <div *ngFor="let item of pos.cart(); let idx = index" 
+      <div *ngFor="let item of pos.cart(); let idx = index; trackBy: trackByItem" 
            class="cart-item fade-up" 
            [class.selected]="idx === pos.selectedItemIdx()"
            (click)="onSelect(idx)">
@@ -51,10 +51,21 @@
         <div style="text-align:right;flex-shrink:0;">
           <div class="mono" style="font-size:12px;font-weight:700;color:var(--text);">₦{{ ((item.price * item.qty) - item.discount).toLocaleString() }}</div>
           <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end;margin-top:3px;">
-            <button (click)="onChangeQty(idx, -1, $event)" style="width:18px;height:18px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text2);padding:0;">−</button>
-            <span class="mono" style="font-size:11px;width:20px;text-align:center;font-weight:700;">{{ item.qty }}</span>
-            <button (click)="onChangeQty(idx, 1, $event)" style="width:18px;height:18px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text2);padding:0;">+</button>
-            <button (click)="onRemove(idx, $event)" style="width:18px;height:18px;border-radius:4px;background:var(--red-dim);border:1px solid rgba(255,75,110,.2);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--red);margin-left:2px;padding:0;">✕</button>
+            <button (click)="onChangeQty(idx, -1, $event)" title="Decrease quantity" style="width:20px;height:22px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--text2);padding:0;">−</button>
+            <input type="text" 
+                   inputmode="numeric" 
+                   pattern="[0-9]*" 
+                   [value]="item.qty" 
+                   (click)="$event.stopPropagation()" 
+                   (focus)="onQtyFocus(idx, $event)" 
+                   (blur)="onCommitQty(idx, $event)" 
+                   (keydown)="onQtyKeyDown($event, idx)" 
+                   (dblclick)="onPromptQty(idx, $event)" 
+                   class="qty-input mono" 
+                   style="width:56px;height:22px;" 
+                   title="Type quantity (e.g. 10, 100, 1000) or double-click for prompt">
+            <button (click)="onChangeQty(idx, 1, $event)" title="Increase quantity" style="width:20px;height:22px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--text2);padding:0;">+</button>
+            <button (click)="onRemove(idx, $event)" title="Remove item" style="width:20px;height:22px;border-radius:4px;background:var(--red-dim);border:1px solid rgba(255,75,110,.2);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--red);margin-left:2px;padding:0;">✕</button>
           </div>
         </div>
       </div>
@@ -94,9 +105,17 @@
         <span style="font-size:15px;font-weight:700;">TOTAL</span>
         <span class="mono" style="font-size:22px;font-weight:700;color:var(--green);">{{ fmt(pos.grandTotal()) }}</span>
       </div>
+      <div *ngIf="pos.giftCardDiscount() > 0" style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
+        <span style="font-size:11px;color:var(--accent);">Gift Card Applied</span>
+        <span class="mono" style="font-size:11px;color:var(--accent);">-{{ fmt(pos.giftCardDiscount()) }}</span>
+      </div>
+      <div *ngIf="pos.giftCardDiscount() > 0" style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text);">Balance Due</span>
+        <span class="mono" style="font-size:14px;font-weight:700;color:var(--amber);">{{ fmt(pos.amountDue()) }}</span>
+      </div>
     </div>
     <button (click)="onOpenPayModal()" class="btn btn-accent" style="width:100%;justify-content:center;font-size:14px;font-weight:700;padding:11px;border-radius:8px;" [disabled]="pos.cart().length === 0">
-      Charge {{ fmt(pos.grandTotal()) }}
+      {{ pos.amountDue() === 0 && pos.giftCardDiscount() > 0 ? 'Complete TX (Paid)' : ('Charge ' + fmt(pos.amountDue())) }}
     </button>
   </div>
 </div>

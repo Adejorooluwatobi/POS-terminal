@@ -2,6 +2,7 @@
   
   <app-header 
     (clickSummary)="openSummaryModal()"
+    (clickHistory)="openHistoryModal()"
     (clickCalculator)="showCalculator.set(true)"
     (clickGiftCard)="openGiftCardModal()"
     (clickTill)="openTillModal()">
@@ -74,4 +75,9 @@
   <app-toast-container></app-toast-container>
 
   <app-till-modal *ngIf="showTillModal()" (close)="closeTillModal()"></app-till-modal>
+  
+  <app-transaction-history-modal 
+    *ngIf="showHistoryModal()" 
+    (close)="closeHistoryModal()">
+  </app-transaction-history-modal>
 </div>

@@ -1,0 +1,83 @@
+<div class="modal-overlay" (click)="close.emit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Session Transaction History</h2>
+      <button class="close-btn" (click)="close.emit()">&times;</button>
+    </div>
+    
+    <div class="history-layout">
+      <div class="tx-list">
+        <div class="loading" *ngIf="loading">Loading history...</div>
+        <div class="empty-state" *ngIf="!loading && transactions.length === 0">
+          No transactions yet for this session.
+        </div>
+        
+        <div 
+          class="tx-item" 
+          *ngFor="let tx of transactions"
+          [class.selected]="selectedTx?.id === tx.id"
+          [class.refunded]="tx.status === 2 || tx.grandTotal < 0"
+          (click)="selectTx(tx)"
+        >
+          <div class="tx-header">
+            <span class="receipt-num">{{ tx.receiptNumber }}</span>
+            <span class="time">{{ tx.createdAt | date:'shortTime' }}</span>
+          </div>
+          <div class="tx-summary">
+            <span class="amount">{{ tx.grandTotal | currency:'NGN':'symbol-narrow' }}</span>
+            <span class="badge" *ngIf="tx.status === 2">Refunded</span>
+            <span class="badge refund-tx" *ngIf="tx.grandTotal < 0 && tx.status !== 2">Refund TX</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="tx-details" *ngIf="selectedTx">
+        <div class="detail-header">
+          <h3>Receipt Details</h3>
+          <span class="receipt-num">{{ selectedTx.receiptNumber }}</span>
+        </div>
+        
+        <div class="items-list">
+          <div class="item" *ngFor="let item of selectedTx.items">
+            <div class="item-name">{{ item.quantity }}x {{ item.productName }}</div>
+            <div class="item-price">{{ item.lineTotal | currency:'NGN':'symbol-narrow' }}</div>
+          </div>
+        </div>
+        
+        <div class="totals-area">
+          <div class="row">
+            <span>Subtotal</span>
+            <span>{{ selectedTx.subtotal | currency:'NGN':'symbol-narrow' }}</span>
+          </div>
+          <div class="row">
+            <span>Tax</span>
+            <span>{{ selectedTx.taxTotal | currency:'NGN':'symbol-narrow' }}</span>
+          </div>
+          <div class="row grand">
+            <span>Total</span>
+            <span>{{ selectedTx.grandTotal | currency:'NGN':'symbol-narrow' }}</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button 
+            class="refund-btn" 
+            *ngIf="selectedTx.status !== 2 && selectedTx.grandTotal > 0"
+            (click)="refundTx()">
+            Refund Transaction
+          </button>
+          <div class="refunded-msg" *ngIf="selectedTx.status === 2">
+            This transaction has been refunded.
+          </div>
+          <div class="refunded-msg" *ngIf="selectedTx.grandTotal < 0">
+            This is a refund receipt.
+          </div>
+        </div>
+      </div>
+      
+      <div class="tx-details empty" *ngIf="!selectedTx && transactions.length > 0">
+        <p>Select a transaction to view details</p>
+      </div>
+    </div>
+  </div>
+</div>
