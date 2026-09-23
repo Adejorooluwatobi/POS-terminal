@@ -56,10 +56,10 @@ export class ProductService {
   }
 
   private mapDtoToProduct = (dto: any): Product | null => {
-    const currentStoreId = this.auth.currentStaff()?.store;
+    const currentStoreId = this.auth.currentStaff()?.store || localStorage.getItem('store_id');
     
-    // Filter out products registered strictly to a different store
-    if (dto.storeId && dto.storeId !== currentStoreId) {
+    // Only filter out products registered strictly to a different store if store is assigned
+    if (currentStoreId && dto.storeId && dto.storeId !== currentStoreId) {
       return null;
     }
 
@@ -77,6 +77,8 @@ export class ProductService {
       }
     }
 
+    const catName = dto.categoryName || dto.category?.name || dto.category || 'all';
+
     return {
       id: dto.id,
       variantId: dto.variants && dto.variants.length > 0 ? dto.variants[0].id : dto.id,
@@ -84,10 +86,12 @@ export class ProductService {
       sku: dto.masterSku || dto.sku || '',
       barcode: dto.barcodes && dto.barcodes.length > 0 ? dto.barcodes[0] : (dto.barcode || ''),
       barcodes: dto.barcodes || [],
-      cat: 'all',
+      cat: catName.toLowerCase(),
+      category: catName,
+      stock: dto.stock ?? dto.stockQuantity ?? dto.variants?.[0]?.inventory?.[0]?.quantity ?? 0,
       price: finalPrice,
       cost: dto.costPrice !== undefined ? dto.costPrice : dto.cost,
-      emoji: '📦',
+      emoji: dto.emoji || '📦',
       tax: dto.taxRate !== undefined ? dto.taxRate : dto.tax,
       rollPrice: finalRollPrice,
       packPrice: finalPackPrice,

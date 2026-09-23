@@ -1,5 +1,6 @@
-<div style="flex:1;display:flex;flex-direction:column;width:100%;background:var(--bg);overflow:hidden;min-height:0;">
+<div class="flex flex-col min-h-screen lg:h-screen w-full bg-background text-on-surface overflow-x-hidden overflow-y-auto lg:overflow-hidden select-none">
   
+  <!-- Global App Header -->
   <app-header 
     (clickSummary)="openSummaryModal()"
     (clickHistory)="openHistoryModal()"
@@ -8,30 +9,79 @@
     (clickTill)="openTillModal()">
   </app-header>
 
-  <div style="flex:1;display:flex;overflow:hidden;width:100%;min-height:0;">
+  <!-- POS Master Register Workspace -->
+  <div class="flex-1 flex flex-col min-h-0 w-full p-1.5 sm:p-2 space-y-1.5 overflow-y-auto lg:overflow-hidden">
     
-    <!-- Left: Product Browser -->
-    <app-product-browser style="display:flex;flex-direction:column;flex-shrink:0;height:100%;"></app-product-browser>
+    <!-- Top Scan & Omnibox Strip -->
+    <section class="w-full bg-surface-container-low/90 backdrop-blur-md border border-surface-container-high rounded-lg p-1.5 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-1.5 shrink-0">
+      <div class="flex-1 flex items-center gap-2 bg-surface-container-lowest border border-surface-container-high px-2.5 py-1 rounded-md shadow-inner">
+        <span class="material-symbols-outlined text-primary text-[17px]" style="width:17px;height:17px;">barcode_scanner</span>
+        <input 
+          class="w-full bg-transparent text-on-surface font-label-code-md text-[11px] focus:outline-none placeholder:text-outline/70" 
+          placeholder="Scan barcode or type SKU / item name — press Enter" 
+          type="text"
+          (keyup)="onOmniboxKey($event)"
+        />
+        <div class="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-code-md text-[9px] border border-surface-container-high">
+          <span class="text-primary font-medium">ENTER</span>
+          <span>↵</span>
+        </div>
+      </div>
 
-    <!-- Center: Transaction -->
-    <app-transaction-cart 
-        style="flex:1;display:flex;flex-direction:column;height:100%;"
-        (clickCharge)="openPayModal()"
-        (clickCustomer)="openCustomerModal()">
-    </app-transaction-cart>
+      <!-- Quick Action Buttons Strip -->
+      <div class="flex items-center gap-1 shrink-0 overflow-x-auto pb-0.5 md:pb-0">
+        <button (click)="openGiftCardModal()" class="px-2.5 py-1 rounded-md bg-surface-container hover:bg-surface-container-high border border-surface-container-highest text-on-surface font-body-md text-[10px] font-medium flex items-center gap-1 transition-all active:scale-95 cursor-pointer">
+          <span class="material-symbols-outlined text-primary text-[14px]" style="width:14px;height:14px;">contactless</span>
+          <span>NFC Tap</span>
+        </button>
+        <button (click)="openCustomerModal()" class="px-2.5 py-1 rounded-md bg-surface-container hover:bg-surface-container-high border border-surface-container-highest text-on-surface font-body-md text-[10px] font-medium flex items-center gap-1 transition-all active:scale-95 cursor-pointer">
+          <span class="material-symbols-outlined text-secondary text-[14px]" style="width:14px;height:14px;">person_add</span>
+          <span>Add VIP</span>
+        </button>
+        <button (click)="openDiscModal()" class="px-2.5 py-1 rounded-md bg-surface-container hover:bg-surface-container-high border border-surface-container-highest text-on-surface font-body-md text-[10px] font-medium flex items-center gap-1 transition-all active:scale-95 cursor-pointer">
+          <span class="material-symbols-outlined text-tertiary text-[14px]" style="width:14px;height:14px;">percent</span>
+          <span>Discount</span>
+        </button>
+      </div>
+    </section>
 
-    <!-- Right: Numpad + Controls -->
-    <app-numpad 
-        style="display:flex;flex-direction:column;flex-shrink:0;height:100%;"
-        (clickDiscount)="openDiscModal()"
-        (clickPromo)="openPromoModal()">
-    </app-numpad>
+    <!-- Main 3-Pane POS Grid (Left 5 Cols | Center 4 Cols | Right 3 Cols) -->
+    <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-2 w-full items-stretch">
+      
+      <!-- LEFT: Product Catalog & Fast-Pick (5 Cols) -->
+      <div class="lg:col-span-5 h-[480px] lg:h-full min-h-0 flex flex-col">
+        <app-product-browser 
+          [searchQuery]="searchQuery" 
+          class="h-full min-h-0 flex flex-col">
+        </app-product-browser>
+      </div>
+
+      <!-- CENTER: Active Transaction Cart (4 Cols) -->
+      <div class="lg:col-span-4 h-[480px] lg:h-full min-h-0 flex flex-col">
+        <app-transaction-cart 
+          class="h-full min-h-0 flex flex-col"
+          (clickCharge)="openPayModal($event)"
+          (clickCustomer)="openCustomerModal()">
+        </app-transaction-cart>
+      </div>
+
+      <!-- RIGHT: Physical Keypad, Overrides & Telemetry (3 Cols) -->
+      <div class="lg:col-span-3 min-h-[360px] lg:h-full min-h-0 flex flex-col">
+        <app-numpad 
+          class="h-full min-h-0 flex flex-col"
+          (clickDiscount)="openDiscModal()"
+          (clickPromo)="openPromoModal()">
+        </app-numpad>
+      </div>
+
+    </div>
 
   </div>
 
-  <!-- Modals -->
+  <!-- Modals & Overlays -->
   <app-pay-modal 
     [isOpen]="showPayModal()" 
+    [initialPayMethod]="selectedTenderForPay()"
     (close)="closePayModal()"
     (paymentSuccess)="onPaymentSuccess()">
   </app-pay-modal>
@@ -80,4 +130,5 @@
     *ngIf="showHistoryModal()" 
     (close)="closeHistoryModal()">
   </app-transaction-history-modal>
+
 </div>

@@ -1,4 +1,4 @@
-import { Component, inject, signal, Input, Output, EventEmitter, computed, effect } from '@angular/core';
+import { Component, inject, signal, Input, Output, EventEmitter, computed, effect, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { POSService } from '../../services/pos.service';
@@ -12,12 +12,13 @@ import { firstValueFrom } from 'rxjs';
   imports: [CommonModule, FormsModule],
   templateUrl: './pay-modal.html',
 })
-export class PayModal {
+export class PayModal implements OnChanges {
   pos = inject(POSService);
   private gcService = inject(GiftCardService);
   private toast = inject(ToastService);
 
   @Input() isOpen = false;
+  @Input() initialPayMethod: 'CASH' | 'CARD' | 'MOBILE' | 'SPLIT' | 'GIFTCARD' | 'TRANSFER' | string = 'CASH';
   @Output() close = new EventEmitter<void>();
   @Output() paymentSuccess = new EventEmitter<void>();
 
@@ -28,6 +29,14 @@ export class PayModal {
   gcPin = signal<string>('');
   gcAmount = signal<number>(0);
   isRedeeming = signal<boolean>(false);
+  isProcessing = signal<boolean>(false);
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['isOpen'] && this.isOpen) {
+      const method = (this.initialPayMethod as any) === 'TRANSFER' ? 'MOBILE' : (this.initialPayMethod || 'CASH');
+      this.selPayMethod(method as any);
+    }
+  }
 
   constructor() {
     effect(() => {
@@ -44,19 +53,23 @@ export class PayModal {
   });
 
   fmt(n: number) {
-    return '₦' + n.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return '₦' + (n || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   selPayMethod(m: 'CASH' | 'CARD' | 'MOBILE' | 'SPLIT' | 'GIFTCARD') {
     this.payMethod.set(m);
     if (m !== 'CASH') {
-        this.tendered.set(this.pos.amountDue());
-        this.gcAmount.set(this.pos.amountDue());
+      this.tendered.set(this.pos.amountDue());
+      this.gcAmount.set(this.pos.amountDue());
     }
   }
 
   setTender(v: number) {
     this.tendered.set(v);
+  }
+
+  addTender(delta: number) {
+    this.tendered.update(v => v + delta);
   }
 
   setExact() {
@@ -73,7 +86,6 @@ export class PayModal {
     if (!this.gcNumber() || this.gcAmount() <= 0) return;
     
     this.isRedeeming.set(true);
-    console.log('Redeeming gift card for store:', storeId);
     try {
       const amountToRedeem = this.gcAmount();
       const cardInfo = await firstValueFrom(this.gcService.redeem(this.gcNumber(), amountToRedeem, this.gcPin()));
@@ -104,19 +116,26 @@ export class PayModal {
   async processPayment() {
     const g = this.pos.amountDue();
     if (this.payMethod() === 'CASH' && this.tendered() < g) {
-      alert('Amount tendered is insufficient');
+      alert('Amount tendered is insufficient for total due.');
       return;
     }
 
-    await this.pos.processPayment(this.payMethod(), this.tendered());
-    this.paymentSuccess.emit();
-    this.closeModal();
+    this.isProcessing.set(true);
+    try {
+      await this.pos.processPayment(this.payMethod(), this.tendered());
+      this.paymentSuccess.emit();
+      this.closeModal();
+    } catch (e: any) {
+      this.toast.error(e?.message || 'Payment processing encountered an error');
+    } finally {
+      this.isProcessing.set(false);
+    }
   }
 
   closeModal() {
     this.gcNumber.set('');
     this.gcPin.set('');
+    this.isProcessing.set(false);
     this.close.emit();
   }
 }
-

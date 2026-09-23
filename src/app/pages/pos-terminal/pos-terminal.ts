@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from '../../components/header/header.component';
 import { ProductBrowser } from '../../components/product-browser/product-browser';
@@ -18,7 +18,7 @@ import { TransactionHistoryModal } from '../../components/transaction-history-mo
 import { POSService } from '../../services/pos.service';
 import { TillSessionService } from '../../services/till-session.service';
 import { ScannerService } from '../../services/scanner.service';
-import { OnInit, OnDestroy } from '@angular/core';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-pos-terminal',
@@ -47,14 +47,10 @@ export class POSTerminal implements OnInit, OnDestroy {
   pos = inject(POSService);
   tillSession = inject(TillSessionService);
   scanner = inject(ScannerService);
+  toast = inject(ToastService);
 
-  ngOnInit() {
-    this.scanner.init();
-  }
-
-  ngOnDestroy() {
-    this.scanner.destroy();
-  }
+  searchQuery = signal<string>('');
+  selectedTenderForPay = signal<'CASH' | 'CARD' | 'GIFTCARD' | 'TRANSFER' | 'SPLIT' | 'MOBILE'>('CASH');
 
   showPayModal = signal(false);
   showReceiptModal = signal(false);
@@ -67,8 +63,44 @@ export class POSTerminal implements OnInit, OnDestroy {
   showTillModal = signal(false);
   showHistoryModal = signal(false);
 
-  openPayModal() { this.showPayModal.set(true); }
-  closePayModal() { this.showPayModal.set(false); }
+  ngOnInit() {
+    this.scanner.init();
+  }
+
+  ngOnDestroy() {
+    this.scanner.destroy();
+  }
+
+  async onOmniboxKey(event: KeyboardEvent) {
+    const input = event.target as HTMLInputElement;
+    if (event.key === 'Enter') {
+      const val = input.value.trim();
+      if (val) {
+        const p = await this.pos.processBarcode(val);
+        if (p) {
+          this.toast.success(`Added ${p.name}`);
+          input.value = '';
+          this.searchQuery.set('');
+        } else {
+          // Keep as search filter query
+          this.searchQuery.set(val);
+        }
+      }
+    } else {
+      this.searchQuery.set(input.value);
+    }
+  }
+
+  openPayModal(method?: string) {
+    if (method) {
+      this.selectedTenderForPay.set(method as any);
+    }
+    this.showPayModal.set(true);
+  }
+
+  closePayModal() { 
+    this.showPayModal.set(false); 
+  }
 
   onPaymentSuccess() {
     this.showPayModal.set(false);

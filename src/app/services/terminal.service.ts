@@ -18,7 +18,7 @@ export class TerminalService {
     if (saved) this.pairedTerminal.set(JSON.parse(saved));
   }
 
-  async pair(code: string): Promise<boolean> {
+  async pair(code: string): Promise<{ success: boolean; message?: string }> {
     try {
       const res = await firstValueFrom(
         this.api.post<any>('/api/terminals/pair', { pairingCode: code })
@@ -34,6 +34,7 @@ export class TerminalService {
             console.log('Terminal data found:', res.terminal);
             localStorage.setItem('terminal_data', JSON.stringify(res.terminal));
             localStorage.setItem('terminal_id', res.terminal.id);
+            localStorage.setItem('terminal_code', res.terminal.terminalCode || res.terminal.code || '');
             localStorage.setItem('store_id', res.terminal.storeId || '');
             localStorage.setItem('store_name', res.terminal.storeName || res.terminal.name || '');
             if (res.terminal.storeAddress) localStorage.setItem('store_address', res.terminal.storeAddress);
@@ -43,30 +44,15 @@ export class TerminalService {
             this.pairedTerminal.set(res.terminal);
           }
           this.isPaired.set(true);
-          return true;
+          return { success: true };
         }
       }
-    } catch (error) {
+      return { success: false, message: res?.message || 'Invalid pairing code.' };
+    } catch (error: any) {
       console.error('Terminal pairing failed with remote API:', error);
+      const msg = error?.error?.message || error?.error?.title || error?.message || 'Terminal pairing failed. Please verify API server is running and pairing code is active.';
+      return { success: false, message: msg };
     }
-    // Fallback pairing for offline/demo if remote backend is unreachable
-    if (code && code.length === 6) {
-      const demoTerminal = {
-        id: 'term-demo-01',
-        name: 'VI Main Terminal',
-        storeId: '403a1850-7664-4fa7-9629-61484c66bd66',
-        storeName: 'Victoria Island Flagship'
-      };
-      localStorage.setItem('terminal_token', 'demo_token_' + code);
-      localStorage.setItem('terminal_data', JSON.stringify(demoTerminal));
-      localStorage.setItem('terminal_id', demoTerminal.id);
-      localStorage.setItem('store_id', demoTerminal.storeId);
-      localStorage.setItem('store_name', demoTerminal.name);
-      this.pairedTerminal.set(demoTerminal);
-      this.isPaired.set(true);
-      return true;
-    }
-    return false;
   }
 
   getTerminalToken() {
@@ -75,6 +61,21 @@ export class TerminalService {
 
   unpair() {
     localStorage.removeItem('terminal_token');
+    localStorage.removeItem('terminal_data');
+    localStorage.removeItem('terminal_id');
+    localStorage.removeItem('terminal_code');
+    localStorage.removeItem('store_id');
+    localStorage.removeItem('store_name');
+    localStorage.removeItem('store_address');
+    localStorage.removeItem('store_city');
+    localStorage.removeItem('store_phone');
+    localStorage.removeItem('tenant_email');
+    localStorage.removeItem('business_name');
+    localStorage.removeItem('pos_token');
+    localStorage.removeItem('currentStaff');
+    localStorage.removeItem('active_till_session');
+    localStorage.removeItem('till_session_id');
+    this.pairedTerminal.set(null);
     this.isPaired.set(false);
   }
 }

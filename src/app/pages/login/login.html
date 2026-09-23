@@ -1,96 +1,147 @@
-<div class="fixed inset-0 flex items-center justify-center" style="background:var(--bg);">
-  <div style="width:340px;">
-    <!-- Terminal badge -->
-    <div style="text-align:center;margin-bottom:28px;">
-      <div style="display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 12px;margin-bottom:16px;">
-        <span class="scanner-dot"></span>
-        <span class="mono" style="font-size:10px;color:var(--text3);">TERMINAL · LG-01-T3</span>
-        <span class="tag tag-dim" style="margin-left:2px;">VI Store</span>
+<div class="min-h-screen w-full flex items-center justify-center bg-background px-4 py-8 select-none overflow-y-auto">
+  <div class="w-full max-w-sm flex flex-col items-center">
+    
+    <!-- Top Branding & Terminal Badge -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center gap-2 bg-surface-container border border-surface-container-high rounded-full px-3 py-1 mb-3 shadow-inner">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+        </span>
+        <span class="font-label-code-md text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold">TERMINAL · {{ terminalCode() }}</span>
+        <span class="text-outline">•</span>
+        <span class="font-caption text-[11px] text-secondary font-semibold">READY</span>
       </div>
-      <div style="font-size:26px;font-weight:700;letter-spacing:-.03em;color:var(--text);">RetailOS</div>
-      <div class="mono" style="font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:.06em;">POINT OF SALE · v2.4</div>
+      <h1 class="font-headline-lg text-headline-lg tracking-tight text-on-surface font-bold">RetailOS</h1>
+      <p class="font-label-code-md text-caption text-primary tracking-widest uppercase mt-0.5">Point of Sale Workstation</p>
     </div>
 
-    <!-- Login card -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.2);">
-      
-      <!-- Top Inputs -->
-      <div style="padding:18px;border-bottom:1px solid var(--border);background:var(--surface2);">
-        <!-- Store -->
-        <div style="margin-bottom:14px;">
-          <label style="display:block;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Store Location</label>
-          <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
-             <span style="font-size:16px;">🏪</span>
-             <div style="flex:1;">
-               <div style="font-size:13px;font-weight:700;color:var(--text);">{{ storeName() || 'Loading Store...' }}</div>
-               <div class="mono" style="font-size:9px;color:var(--text3);opacity:0.7;">ID: {{ storeId() || '...' }}</div>
-             </div>
+    <!-- Login Obsidian Card -->
+    <div class="w-full bg-surface-container-low border border-surface-container-high rounded-2xl overflow-hidden shadow-2xl relative">
+      <!-- Glow ambient backdrop -->
+      <div class="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+
+      <!-- Store & Employee Info Header -->
+      <div class="p-5 border-b border-surface-container-high bg-surface-container-lowest/60">
+        <!-- Store Location Chip -->
+        <div class="mb-3">
+          <span class="font-caption text-[10px] font-bold text-outline uppercase tracking-wider block mb-1">Assigned Store Location</span>
+          <div class="flex items-center gap-2.5 bg-surface-container border border-surface-container-high/80 rounded-xl px-3 py-2">
+            <div class="w-7 h-7 rounded-lg bg-primary-container/20 text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-[16px]" style="width:16px;height:16px;">storefront</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <span class="font-body-md text-caption font-bold text-on-surface block truncate">{{ storeName() }}</span>
+              <span class="font-label-code-md text-[10px] text-on-surface-variant block truncate">ID: {{ storeId() || 'ST-DEFAULT-01' }}</span>
+            </div>
           </div>
         </div>
 
-        <!-- Employee Number -->
-        <div style="position:relative;">
-          <label style="display:block;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Employee ID</label>
-          <div style="position:relative;">
+        <!-- Employee ID Input -->
+        <div>
+          <label class="font-caption text-[10px] font-bold text-outline uppercase tracking-wider block mb-1">Employee Number</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary text-[18px]" style="width:18px;height:18px;">badge</span>
             <input 
+              #empInputRef
+              id="employeeNoInput"
               [(ngModel)]="employeeNo" 
-              class="inp" 
-              style="padding-left:36px;font-size:14px;height:44px;border-radius:10px;font-weight:600;" 
+              (keydown.enter)="onEmployeeEnter()"
+              class="w-full bg-surface-container border border-surface-container-high rounded-xl pl-9 pr-3 py-2.5 font-label-code-md text-body-md text-on-surface font-semibold placeholder:text-outline/50 focus:outline-none focus:border-primary focus:shadow-[0_0_12px_rgba(76,215,246,0.25)] transition-all" 
               placeholder="e.g. EMP-001"
               autocomplete="off"
             />
-            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;">👤</span>
-          </div>
-
-          <div *ngIf="employeeNo() && !isInputReady()" style="font-size:10px;color:var(--amber);font-weight:600;margin-top:6px;animation:fadeUp .2s;">
-            Please enter a valid Employee ID
-          </div>
-          <div *ngIf="isInputReady()" style="font-size:10px;color:var(--accent);font-weight:600;margin-top:6px;animation:fadeUp .2s;">
-            Ready for PIN entry
           </div>
         </div>
       </div>
 
-      <!-- PIN area -->
-      <div style="padding:24px 18px;transition:all .3s;" 
-           [style.opacity]="isInputReady() ? '1' : '0.4'" 
-           [style.pointer-events]="isInputReady() ? 'auto' : 'none'">
+      <!-- PIN Input Area -->
+      <div class="p-5 transition-all duration-200" 
+           [class.opacity-40]="!isInputReady()" 
+           [class.pointer-events-none]="!isInputReady()">
         
-        <div style="display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;">Secure Access PIN</div>
+        <div class="flex items-center justify-between mb-3 text-caption text-outline">
+          <span class="font-caption text-[10px] font-bold uppercase tracking-widest">Enter 4-Digit Access PIN</span>
+          <span class="font-caption text-[10px] text-primary flex items-center gap-1 font-semibold">
+            <span class="material-symbols-outlined text-[12px]" style="width:12px;height:12px;">keyboard</span>
+            Keypad or Typing
+          </span>
         </div>
 
-        <!-- PIN display -->
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-          <div style="display:flex;gap:12px;">
-            <div *ngFor="let i of [0,1,2,3]" 
-                 class="pin-dot" 
-                 style="width:12px;height:12px;border-radius:50%;border:2px solid var(--border2);transition:all .15s;"
-                 [style.background]="pin().length > i ? 'var(--accent)' : 'transparent'"
-                 [style.border-color]="pin().length > i ? 'var(--accent)' : 'var(--border2)'"
-                 [style.box-shadow]="pin().length > i ? '0 0 10px var(--accent-glow)' : 'none'">
+        <!-- 4-Digit Display Indicator with Direct Keyboard Support -->
+        <div class="relative bg-surface-container-lowest border border-surface-container-high rounded-xl p-3 flex items-center justify-between mb-4 shadow-inner cursor-pointer"
+             (click)="focusPinInput()">
+          <input
+            #pinInputRef
+            id="hiddenPinInput"
+            type="password"
+            inputmode="numeric"
+            maxlength="4"
+            [value]="pin()"
+            (input)="onPinInputChange($event)"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            aria-label="4-digit access pin"
+          />
+          <div class="flex items-center gap-3 pl-2 pointer-events-none">
+            <div *ngFor="let i of [0, 1, 2, 3]" 
+                 class="w-3.5 h-3.5 rounded-full border-2 transition-all duration-150"
+                 [class.bg-primary]="pin().length > i"
+                 [class.border-primary]="pin().length > i"
+                 [class.shadow-[0_0_10px_rgba(76,215,246,0.6)]]="pin().length > i"
+                 [class.border-surface-container-highest]="pin().length <= i"
+                 [class.bg-transparent]="pin().length <= i">
             </div>
           </div>
-          <button (click)="pinBackspace()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:4px;">⌫</button>
+          <button type="button" (click)="pinBackspace(); $event.stopPropagation()" class="p-1 rounded text-on-surface-variant hover:text-error transition-colors cursor-pointer z-20" title="Backspace">
+            <span class="material-symbols-outlined text-[18px]" style="width:18px;height:18px;">backspace</span>
+          </button>
         </div>
 
-        <!-- PIN numpad -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-          <div *ngFor="let d of ['1','2','3','4','5','6','7','8','9']" 
-               class="nk" style="height:44px;font-size:18px;" (click)="pinInput(d)">{{ d }}</div>
-          <div class="nk nk-special" style="height:44px;font-size:12px;" (click)="pinClear()">CLR</div>
-          <div class="nk" style="height:44px;font-size:18px;" (click)="pinInput('0')">0</div>
-          <div class="nk nk-action" style="height:44px;" (click)="attemptLogin()">→</div>
+        <!-- Error Feedback Banner -->
+        <div *ngIf="error()" class="mb-3 p-2 rounded-lg bg-error-container/40 border border-error/30 text-error text-center font-caption text-[11px] font-semibold animate-fade-in">
+          {{ error() }}
+        </div>
+
+        <!-- Tactile 3x4 Touch Keypad -->
+        <div class="grid grid-cols-3 gap-2">
+          <button *ngFor="let d of ['1','2','3','4','5','6','7','8','9']" 
+                  (click)="pinInput(d)"
+                  [disabled]="isLoading()"
+                  class="h-12 rounded-xl bg-surface-container hover:bg-surface-container-high active:scale-95 text-on-surface font-label-numeric-keypad text-headline-md flex items-center justify-center border border-surface-container-highest shadow-sm transition-all cursor-pointer">
+            {{ d }}
+          </button>
+          <button (click)="pinClear()" 
+                  [disabled]="isLoading()"
+                  class="h-12 rounded-xl bg-surface-container-low hover:bg-error-container/30 text-error font-headline-md text-caption uppercase font-bold flex items-center justify-center border border-surface-container-highest shadow-sm transition-all cursor-pointer">
+            CLR
+          </button>
+          <button (click)="pinInput('0')" 
+                  [disabled]="isLoading()"
+                  class="h-12 rounded-xl bg-surface-container hover:bg-surface-container-high active:scale-95 text-on-surface font-label-numeric-keypad text-headline-md flex items-center justify-center border border-surface-container-highest shadow-sm transition-all cursor-pointer">
+            0
+          </button>
+          <button (click)="attemptLogin()" 
+                  [disabled]="isLoading() || pin().length < 4"
+                  class="h-12 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-headline-md flex items-center justify-center shadow-[0_0_15px_rgba(76,215,246,0.3)] transition-all cursor-pointer disabled:opacity-50">
+            <span *ngIf="!isLoading()" class="material-symbols-outlined text-[20px]" style="width:20px;height:20px;">arrow_forward</span>
+            <span *ngIf="isLoading()" class="material-symbols-outlined text-[20px] animate-spin" style="width:20px;height:20px;">sync</span>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Theme toggle -->
-    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;">
-      <span style="font-size:10px;color:var(--text3);">☀</span>
-      <div class="theme-toggle" (click)="toggleTheme()"><div class="knob"></div></div>
-      <span style="font-size:10px;color:var(--text3);">☾</span>
+    <!-- Bottom Actions -->
+    <div class="flex items-center justify-between w-full mt-4 px-2">
+      <button (click)="goToPairing()" class="font-caption text-[11px] text-on-surface-variant hover:text-primary flex items-center gap-1 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">link</span>
+        <span>Re-link Workstation</span>
+      </button>
+
+      <button (click)="themeService.toggleTheme()" class="font-caption text-[11px] text-on-surface-variant hover:text-primary flex items-center gap-1 transition-colors cursor-pointer">
+        <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">dark_mode</span>
+        <span>Toggle Theme</span>
+      </button>
     </div>
-    <div class="mono" style="text-align:center;margin-top:8px;font-size:10px;color:var(--text3);">Demo PIN for any staff: 1234</div>
+
   </div>
 </div>
