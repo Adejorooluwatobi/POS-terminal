@@ -1,4 +1,4 @@
-import { Component, inject, signal, Input, Output, EventEmitter } from '@angular/core';
+import { Component, inject, signal, Input, Output, EventEmitter, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { POSService } from '../../services/pos.service';
@@ -26,7 +26,7 @@ export class GiftCardSaleModal {
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
 
-  activeTab = signal<'issue' | 'operations' | 'replace'>('issue');
+  activeTab = signal<'issue' | 'operations' | 'replace'>('operations');
 
   // Tab 1: Issue State
   cardNumber = signal('');
@@ -38,8 +38,8 @@ export class GiftCardSaleModal {
   searchCardNumber = signal('');
   searchedCard = signal<any>(null);
   isLoading = signal(false);
-  topUpAmount = signal<number>(0);
-  topUpPaymentMethod = signal<string>('Cash');
+  topUpAmount = signal<number>(50000);
+  topUpPaymentMethod = signal<string>('transfer');
   deactivateReason = signal('');
 
   // Tab 3: Lost Card Replacement State
@@ -68,13 +68,25 @@ export class GiftCardSaleModal {
   isLivenessModalOpen = signal(false);
   livenessCustomerName = signal('');
 
+  projectedBalance = computed(() => {
+    const current = this.searchedCard()?.balance || 0;
+    return current + (this.topUpAmount() || 0);
+  });
+
   ngOnChanges() {
     if (this.isOpen) {
-      this.activeTab.set('issue');
-      this.generateNewCard();
-      this.resetOperationsTab();
-      this.resetLostCardTab();
+      if (!this.cardNumber()) {
+        this.generateNewCard();
+      }
     }
+  }
+
+  setTopUpPreset(amt: number) {
+    this.topUpAmount.set(amt);
+  }
+
+  setIssuePreset(amt: number) {
+    this.amount.set(amt);
   }
 
   // ── Tab 1: Issue Logic ──────────────────────────────────────────
@@ -141,8 +153,8 @@ export class GiftCardSaleModal {
   resetOperationsTab() {
     this.searchCardNumber.set('');
     this.searchedCard.set(null);
-    this.topUpAmount.set(0);
-    this.topUpPaymentMethod.set('Cash');
+    this.topUpAmount.set(50000);
+    this.topUpPaymentMethod.set('transfer');
     this.deactivateReason.set('');
   }
 
@@ -227,7 +239,6 @@ export class GiftCardSaleModal {
         this.giftCardService.recharge(card.cardNumber, this.topUpAmount(), this.topUpPaymentMethod())
       );
       this.searchedCard.set(res);
-      this.topUpAmount.set(0);
       this.toast.show(`Successfully reloaded ₦${res.balance.toLocaleString()}`, 'success');
     } catch (e: any) {
       this.toast.show(e?.error?.message || e?.message || 'Top-up failed', 'error');
@@ -311,7 +322,6 @@ export class GiftCardSaleModal {
 
     this.isRegisteringCustomer = true;
     try {
-      // 1. Create customer with identity & liveness
       const customer = await firstValueFrom(
         this.customerService.createCustomer({
           firstName: this.newCustomerFirstName().trim(),
@@ -326,9 +336,7 @@ export class GiftCardSaleModal {
         } as any)
       );
 
-      // 2. Link customer to the lost card
-      await firstValueFrom(this.giftCardService.getGiftCards()); // refresh
-      // Refresh lost card with customer attached
+      await firstValueFrom(this.giftCardService.getGiftCards());
       const refreshed = await firstValueFrom(this.giftCardService.getGiftCardByNumber(lost.cardNumber));
       refreshed.customerId = customer.id;
       refreshed.customerName = `${customer.firstName} ${customer.lastName}`.trim();

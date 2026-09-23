@@ -1,34 +1,80 @@
-<div class="fixed inset-0 flex items-center justify-center" style="background:var(--bg);">
-  <div style="width:320px;">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;">
-      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Open Till</div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:20px;">Count the opening float and enter below</div>
+<div class="min-h-screen w-full flex items-center justify-center bg-background px-4 py-8 select-none overflow-y-auto">
+  <div class="w-full max-w-sm">
+    <div class="bg-surface-container-low border border-surface-container-high rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+      <!-- Glow ambient backdrop -->
+      <div class="absolute -top-16 -right-16 w-36 h-36 bg-secondary/10 rounded-full blur-2xl pointer-events-none"></div>
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <div class="flex items-center gap-1.5 mb-1">
+            <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+            <span class="font-caption text-[10px] text-secondary font-bold uppercase tracking-widest">SESSION INITIALIZATION</span>
+          </div>
+          <h2 class="font-headline-md text-headline-md text-on-surface font-bold">Open Till</h2>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shadow-inner">
+          <span class="material-symbols-outlined text-[22px]" style="width:22px;height:22px;">payments</span>
+        </div>
+      </div>
       
-      <!-- Staff Badge -->
-      <div *ngIf="auth.currentStaff() as staff" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:16px;">
-        <div [style.background]="staff.color + '22'" [style.border-color]="staff.color + '66'" [style.color]="staff.color"
-             style="width:30px;height:30px;border-radius:50%;border:1.5px solid;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;">
+      <p class="font-body-md text-caption text-on-surface-variant mb-4">
+        Count the physical cash in the drawer and specify the opening float.
+      </p>
+
+      <!-- Active Staff Badge -->
+      <div *ngIf="auth.currentStaff() as staff" class="flex items-center gap-3 bg-surface-container border border-surface-container-high rounded-xl p-3 mb-5 shadow-inner">
+        <div class="w-9 h-9 rounded-xl bg-primary-container/30 text-primary flex items-center justify-center font-bold text-caption shadow-sm">
           {{ staff.initials }}
         </div>
-        <div>
-          <div style="font-size:12px;font-weight:600;">{{ staff.name }}</div>
-          <div style="font-size:10px;color:var(--text3);">{{ staff.role }} · {{ staff.store }}</div>
+        <div class="flex flex-col min-w-0">
+          <span class="font-body-md text-caption font-bold text-on-surface truncate">{{ staff.name }}</span>
+          <span class="font-label-code-md text-[10px] text-on-surface-variant uppercase tracking-wider">{{ staff.role }} · {{ staff.store || 'Active Store' }}</span>
         </div>
       </div>
 
-      <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Opening Float (₦)</div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:8px;padding:9px 12px;margin-bottom:16px;">
-        <span class="mono" style="color:var(--accent);font-size:15px;">₦</span>
-        <input 
-          class="mono" 
-          style="background:none;border:none;outline:none;color:var(--text);font-size:16px;width:100%;" 
-          type="number" 
-          [(ngModel)]="floatValue"
-        >
+      <!-- Opening Float Input -->
+      <div class="mb-3">
+        <label class="font-caption text-[10px] font-bold text-outline uppercase tracking-wider block mb-1.5">Opening Float Amount (₦)</label>
+        <div class="relative flex items-center bg-surface-container-lowest border border-surface-container-high rounded-xl px-3.5 py-2.5 focus-within:border-secondary focus-within:shadow-[0_0_12px_rgba(78,222,163,0.25)] transition-all">
+          <span class="font-label-code-md text-body-lg text-secondary font-bold mr-2">₦</span>
+          <input 
+            class="w-full bg-transparent font-label-code-lg text-headline-md text-on-surface font-bold focus:outline-none placeholder:text-outline/40" 
+            type="number" 
+            [(ngModel)]="floatValue"
+            (keydown.enter)="openTill()"
+            placeholder="0"
+            autofocus
+          >
+        </div>
       </div>
-      <button (click)="openTill()" class="btn btn-accent btn-md" style="width:100%;justify-content:center;font-size:13px;padding:10px;">
-        Open Till & Begin Shift →
+
+      <!-- Quick Amount Presets -->
+      <div class="grid grid-cols-4 gap-1.5 mb-6">
+        <button (click)="setPreset(5000)" class="py-1.5 px-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-code-md text-[11px] font-semibold transition-colors cursor-pointer border border-surface-container-highest">
+          5k
+        </button>
+        <button (click)="setPreset(10000)" class="py-1.5 px-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-code-md text-[11px] font-semibold transition-colors cursor-pointer border border-surface-container-highest">
+          10k
+        </button>
+        <button (click)="setPreset(20000)" class="py-1.5 px-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-code-md text-[11px] font-semibold transition-colors cursor-pointer border border-surface-container-highest">
+          20k
+        </button>
+        <button (click)="setPreset(50000)" class="py-1.5 px-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-code-md text-[11px] font-semibold transition-colors cursor-pointer border border-surface-container-highest">
+          50k
+        </button>
+      </div>
+
+      <!-- Primary Action CTA -->
+      <button (click)="openTill()" 
+              [disabled]="isSubmitting() || floatValue() < 0"
+              class="w-full py-3.5 px-4 rounded-xl bg-secondary hover:bg-secondary-container text-on-secondary font-headline-md text-body-md font-bold tracking-wide shadow-[0_0_20px_rgba(78,222,163,0.35)] hover:shadow-[0_0_28px_rgba(78,222,163,0.55)] transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+        <span *ngIf="!isSubmitting()" class="material-symbols-outlined text-[20px]" style="width:20px;height:20px;">lock_open</span>
+        <span *ngIf="isSubmitting()" class="material-symbols-outlined text-[20px] animate-spin" style="width:20px;height:20px;">sync</span>
+        <span>{{ isSubmitting() ? 'Opening Till...' : 'Open Till & Begin Shift' }}</span>
+        <span *ngIf="!isSubmitting()" class="material-symbols-outlined text-[18px]" style="width:18px;height:18px;">arrow_forward</span>
       </button>
+
     </div>
   </div>
 </div>

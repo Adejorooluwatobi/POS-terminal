@@ -2,7 +2,6 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { Product, CartItem } from '../models/product.model';
 import { Customer } from '../models/customer.model';
 import { Transaction } from '../models/transaction.model';
-import { PRODUCTS, CUSTOMERS } from '../models/mock-data';
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import { ProductService } from './product.service';
@@ -32,8 +31,8 @@ export class POSService {
   private toast = inject(ToastService);
   private storeService = inject(StoreService);
   private terminalService = inject(TerminalService);
-  products = signal<Product[]>(PRODUCTS);
-  customers = signal<Customer[]>(CUSTOMERS);
+  products = signal<Product[]>([]);
+  customers = signal<Customer[]>([]);
   cart = signal<CartItem[]>([]);
   heldTxs = signal<any[]>([]);
   selectedItemIdx = signal<number>(-1);
@@ -157,27 +156,39 @@ export class POSService {
     // Add a tiny delay to ensure the component tree is stable before signals start updating
     await new Promise(resolve => setTimeout(resolve, 100));
 
+    // If not authenticated yet with a cashier session, load only offline cache and avoid remote 401s
+    const token = localStorage.getItem('pos_token');
+    if (!token) {
+      try {
+        const cachedProds = await db.products.toArray();
+        this.products.set(cachedProds || []);
+        const cachedCusts = await db.customers.toArray();
+        this.customers.set(cachedCusts || []);
+      } catch (err) {}
+      return;
+    }
+
     try {
       // Fetch Products
       try {
         if (navigator.onLine) {
           try {
             const prods = await firstValueFrom(this.productService.getProducts());
-            if (prods && Array.isArray(prods) && prods.length > 0) {
+            if (prods && Array.isArray(prods)) {
               this.products.set(prods);
               await db.products.clear();
-              await db.products.bulkPut(prods);
+              if (prods.length > 0) {
+                await db.products.bulkPut(prods);
+              }
             }
           } catch (e) {
-            console.warn('Failed to fetch products from API, loaded offline cache');
+            console.warn('Failed to fetch products from API, loaded offline cache:', e);
             const cached = await db.products.toArray();
-            if (cached.length) this.products.set(cached);
-            else this.products.set([]);
+            this.products.set(cached || []);
           }
         } else {
           const cached = await db.products.toArray();
-          if (cached.length) this.products.set(cached);
-          else this.products.set([]);
+          this.products.set(cached || []);
         }
       } catch (err) {
         console.error('Local DB products error', err);
@@ -188,21 +199,21 @@ export class POSService {
         if (navigator.onLine) {
           try {
             const custs = await firstValueFrom(this.customerService.getCustomers());
-            if (custs && Array.isArray(custs) && custs.length > 0) {
+            if (custs && Array.isArray(custs)) {
               this.customers.set(custs);
               await db.customers.clear();
-              await db.customers.bulkPut(custs);
+              if (custs.length > 0) {
+                await db.customers.bulkPut(custs);
+              }
             }
           } catch (e) {
-            console.warn('Failed to fetch customers from API, loaded offline cache');
+            console.warn('Failed to fetch customers from API, loaded offline cache:', e);
             const cached = await db.customers.toArray();
-            if (cached.length) this.customers.set(cached);
-            else this.customers.set([]);
+            this.customers.set(cached || []);
           }
         } else {
           const cached = await db.customers.toArray();
-          if (cached.length) this.customers.set(cached);
-          else this.customers.set([]);
+          this.customers.set(cached || []);
         }
       } catch (err) {
         console.error('Local DB customers error', err);

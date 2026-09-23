@@ -1,33 +1,46 @@
-<div *ngIf="isOpen" class="modal-wrap">
-  <div class="modal" style="max-width:420px;">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:13px;font-weight:700;">Session Summary</span>
-      <button (click)="closeModal()" class="btn btn-ghost btn-xs">✕</button>
+<div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-container-lowest/80 backdrop-blur-xl animate-fade-in select-none">
+  <div class="w-full max-w-md bg-surface-container-low border border-surface-container-high rounded-2xl shadow-2xl overflow-hidden relative">
+    
+    <div class="p-4 bg-surface-container border-b border-surface-container-high flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-[20px]" style="width:20px;height:20px;">analytics</span>
+        <span class="font-headline-md text-caption font-bold text-on-surface uppercase tracking-wider">Active Shift Summary</span>
+      </div>
+      <button (click)="closeModal()" class="w-7 h-7 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface cursor-pointer">
+        <span class="material-symbols-outlined text-[16px]" style="width:16px;height:16px;">close</span>
+      </button>
     </div>
-    <div style="padding:16px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Revenue</div>
-          <div class="mono" style="font-size:18px;font-weight:700;color:var(--green);">{{ fmt(pos.sessionRevenue()) }}</div>
+
+    <div class="p-5 space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-surface-container border border-surface-container-high rounded-xl p-3.5 shadow-sm">
+          <span class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Shift Total Revenue</span>
+          <div class="font-label-code-lg text-headline-md font-bold text-secondary">{{ fmt(pos.sessionRevenue()) }}</div>
         </div>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Transactions</div>
-          <div class="mono" style="font-size:18px;font-weight:700;">{{ pos.sessionTxCount() }}</div>
+
+        <div class="bg-surface-container border border-surface-container-high rounded-xl p-3.5 shadow-sm">
+          <span class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Completed Sales</span>
+          <div class="font-label-code-lg text-headline-md font-bold text-primary">{{ pos.sessionTxCount() }}</div>
         </div>
-        <div *ngIf="auth.currentStaff() as staff" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Cashier</div>
-          <div style="font-size:12px;font-weight:600;">{{ staff.name }}</div>
-          <div style="font-size:10px;color:var(--text3);">{{ staff.id }} · {{ staff.role }}</div>
+
+        <div *ngIf="auth.currentStaff() as staff" class="bg-surface-container border border-surface-container-high rounded-xl p-3.5 shadow-sm">
+          <span class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Active Cashier</span>
+          <div class="font-body-md text-caption font-bold text-on-surface truncate">{{ staff.name }}</div>
+          <span class="font-label-code-md text-[10px] text-on-surface-variant uppercase">{{ staff.id }} · {{ staff.role }}</span>
         </div>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Opening Float</div>
-          <div class="mono" style="font-size:18px;font-weight:700;color:var(--amber);">₦10,000.00</div>
+
+        <div class="bg-surface-container border border-surface-container-high rounded-xl p-3.5 shadow-sm">
+          <span class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Average Ticket Size</span>
+          <div class="font-label-code-lg text-body-md font-bold text-on-surface mt-0.5">
+            {{ pos.sessionTxCount() > 0 ? fmt(pos.sessionRevenue() / pos.sessionTxCount()) : '₦0.00' }}
+          </div>
         </div>
       </div>
-      <div style="font-size:10px;color:var(--text3);margin-bottom:5px;">Avg. Transaction Value</div>
-      <div class="mono" style="font-size:13px;font-weight:700;color:var(--text);">
-        {{ pos.sessionTxCount() > 0 ? fmt(pos.sessionRevenue() / pos.sessionTxCount()) : '₦0.00' }}
-      </div>
+
+      <button (click)="closeModal()" class="w-full py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-highest text-on-surface font-body-md text-caption font-semibold transition-colors cursor-pointer">
+        Dismiss
+      </button>
     </div>
+
   </div>
 </div>

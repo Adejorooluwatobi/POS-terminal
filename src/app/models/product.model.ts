@@ -6,6 +6,8 @@ export interface Product {
   barcode: string;
   barcodes?: string[];
   cat: string;
+  category?: string;
+  stock?: number;
   price: number;
   cost: number;
   emoji: string;

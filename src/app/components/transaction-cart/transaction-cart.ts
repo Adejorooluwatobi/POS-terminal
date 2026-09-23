@@ -1,4 +1,4 @@
-import { Component, inject, Output, EventEmitter } from '@angular/core';
+import { Component, inject, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { POSService } from '../../services/pos.service';
 import { CartItem } from '../../models/product.model';
@@ -13,7 +13,9 @@ export class TransactionCart {
   pos = inject(POSService);
   customerName = this.pos.customerName;
 
-  @Output() clickCharge = new EventEmitter<void>();
+  selectedTender = signal<'CASH' | 'CARD' | 'GIFTCARD' | 'TRANSFER'>('CARD');
+
+  @Output() clickCharge = new EventEmitter<string>();
   @Output() clickCustomer = new EventEmitter<void>();
 
   trackByItem(index: number, item: CartItem): string {
@@ -21,7 +23,13 @@ export class TransactionCart {
   }
 
   fmt(n: number) {
-    return '₦' + n.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return '₦' + (n || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  getItemCode(item: CartItem): string {
+    if (item.sku && item.sku.length <= 5) return item.sku.toUpperCase();
+    if (item.sku) return item.sku.replace(/[^A-Za-z0-9]/g, '').substring(0, 3).toUpperCase();
+    return item.name.split(' ').map(w => w[0]).join('').substring(0, 3).toUpperCase() || 'ITM';
   }
 
   onSelect(idx: number) {
@@ -31,34 +39,6 @@ export class TransactionCart {
   onChangeQty(idx: number, delta: number, event: Event) {
     event.stopPropagation();
     this.pos.updateQty(idx, delta);
-  }
-
-  onQtyFocus(idx: number, event: Event) {
-    event.stopPropagation();
-    this.onSelect(idx);
-    const input = event.target as HTMLInputElement;
-    setTimeout(() => {
-      input.select();
-    }, 0);
-  }
-
-  onCommitQty(idx: number, event: Event) {
-    event.stopPropagation();
-    const input = event.target as HTMLInputElement;
-    const clean = input.value.replace(/[^0-9]/g, '');
-    let val = parseInt(clean, 10);
-    if (isNaN(val) || val < 1) {
-      val = 1;
-    }
-    input.value = val.toString();
-    this.pos.setQty(idx, val);
-  }
-
-  onQtyKeyDown(event: KeyboardEvent, idx: number) {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      (event.target as HTMLInputElement).blur();
-    }
   }
 
   onPromptQty(idx: number, event: Event) {
@@ -79,13 +59,18 @@ export class TransactionCart {
   }
 
   onVoid() {
-    if (confirm('Void this transaction? This will be logged.')) {
+    if (confirm('Void this active transaction? All cart items will be removed.')) {
       this.pos.clearCart();
     }
   }
 
-  onOpenPayModal() {
-    this.clickCharge.emit();
+  selectTender(method: 'CASH' | 'CARD' | 'GIFTCARD' | 'TRANSFER') {
+    this.selectedTender.set(method);
+  }
+
+  onOpenPayModal(method?: string) {
+    const tender = method || this.selectedTender();
+    this.clickCharge.emit(tender);
   }
 
   onOpenCustomerModal() {

@@ -34,8 +34,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
 
-      // Suppress error toast for background sync requests
-      if (!req.url.includes('/transactions/sync')) {
+      // Suppress error toast for background sync requests or unauthenticated public routes (pairing/login)
+      const isPublicRoute = typeof window !== 'undefined' && 
+        (window.location.pathname.includes('/pairing') || window.location.pathname.includes('/login'));
+      const isPublicEndpoint = req.url.includes('/auth/login') || req.url.includes('/terminals/pair') || req.url.includes('/transactions/sync');
+      const isUnauthWithoutToken = error.status === 401 && !localStorage.getItem('pos_token');
+
+      if (!req.url.includes('/transactions/sync') && !(error.status === 401 && (isPublicRoute || isPublicEndpoint || isUnauthWithoutToken))) {
         notify.error(errorMessage);
       }
       return throwError(() => error);

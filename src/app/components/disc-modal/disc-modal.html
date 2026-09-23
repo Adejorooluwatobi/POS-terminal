@@ -1,17 +1,47 @@
-<div *ngIf="isOpen" class="modal-wrap">
-  <div class="modal" style="max-width:300px;">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:13px;font-weight:700;">Manual Discount</span>
-      <button (click)="closeModal()" class="btn btn-ghost btn-xs">✕</button>
-    </div>
-    <div style="padding:14px 16px;">
-      <div style="font-size:10px;color:var(--text3);margin-bottom:10px;" class="mono">Requires supervisor approval · Logged to audit trail</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
-        <button class="btn btn-sm" [class.btn-accent]="discType() === 'pct'" [class.btn-ghost]="discType() !== 'pct'" (click)="onTypeSelect('pct')" style="justify-content:center;">% Off</button>
-        <button class="btn btn-sm" [class.btn-accent]="discType() === 'fixed'" [class.btn-ghost]="discType() !== 'fixed'" (click)="onTypeSelect('fixed')" style="justify-content:center;">₦ Off</button>
+<div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-container-lowest/80 backdrop-blur-xl animate-fade-in select-none">
+  <div class="w-full max-w-xs bg-surface-container-low border border-surface-container-high rounded-2xl shadow-2xl overflow-hidden relative">
+    <div class="p-4 bg-surface-container border-b border-surface-container-high flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-secondary text-[20px]" style="width:20px;height:20px;">percent</span>
+        <span class="font-headline-md text-caption font-bold text-on-surface uppercase tracking-wider">Manual Discount</span>
       </div>
-      <input [(ngModel)]="discValue" type="number" class="inp mono" placeholder="Enter value" style="margin-bottom:10px;font-size:15px;">
-      <button (click)="onApply()" class="btn btn-amber" style="width:100%;justify-content:center;padding:9px;">Apply Discount</button>
+      <button (click)="closeModal()" class="w-7 h-7 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface cursor-pointer">
+        <span class="material-symbols-outlined text-[16px]" style="width:16px;height:16px;">close</span>
+      </button>
+    </div>
+
+    <div class="p-4 space-y-3">
+      <p class="font-caption text-[11px] text-on-surface-variant">Applied to the currently selected cart item. Logged in audit trail.</p>
+      
+      <div class="grid grid-cols-2 gap-2">
+        <button (click)="onTypeSelect('pct')" 
+                class="py-2 rounded-xl font-body-md text-caption font-bold border transition-colors cursor-pointer"
+                [class.bg-primary]="discType() === 'pct'"
+                [class.text-on-primary]="discType() === 'pct'"
+                [class.bg-surface-container]="discType() !== 'pct'"
+                [class.border-surface-container-high]="discType() !== 'pct'">
+          Percentage (% Off)
+        </button>
+        <button (click)="onTypeSelect('fixed')" 
+                class="py-2 rounded-xl font-body-md text-caption font-bold border transition-colors cursor-pointer"
+                [class.bg-primary]="discType() === 'fixed'"
+                [class.text-on-primary]="discType() === 'fixed'"
+                [class.bg-surface-container]="discType() !== 'fixed'"
+                [class.border-surface-container-high]="discType() !== 'fixed'">
+          Fixed Amount (₦ Off)
+        </button>
+      </div>
+
+      <div class="relative">
+        <span class="font-label-code-md text-body-md text-primary font-bold absolute left-3 top-1/2 -translate-y-1/2">
+          {{ discType() === 'pct' ? '%' : '₦' }}
+        </span>
+        <input [(ngModel)]="discValue" (keydown.enter)="onApply()" type="number" class="w-full bg-surface-container-lowest border border-surface-container-high rounded-xl pl-8 pr-3 py-2.5 font-label-code-md text-body-md text-on-surface font-bold focus:outline-none focus:border-primary" placeholder="Enter value" autofocus>
+      </div>
+
+      <button (click)="onApply()" class="w-full py-2.5 rounded-xl bg-secondary hover:bg-secondary-container text-on-secondary font-headline-md text-caption font-bold shadow-md cursor-pointer transition-all">
+        Apply Discount
+      </button>
     </div>
   </div>
 </div>

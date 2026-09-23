@@ -1,37 +1,39 @@
 /* Tailwind is loaded via CDN in index.html */
 
 
-/* ─── CSS VARIABLES ───────────────────────────────────── */
+/* ─── CSS VARIABLES (Obsidian Dark / Stitch Cyberpunk) ────────────────── */
 :root[data-theme="dark"] {
-  --bg:          #07090e;
-  --surface:     #0d1117;
-  --surface2:    #131920;
-  --surface3:    #1a2333;
-  --border:      #1e2d40;
-  --border2:     #253347;
-  --text:        #dde5f0;
-  --text2:       #8ba3bc;
-  --text3:       #4d6a84;
-  --accent:      #00c2ff;
-  --accent-dim:  rgba(0,194,255,0.08);
-  --accent-glow: rgba(0,194,255,0.18);
-  --green:       #00d68f;
-  --green-dim:   rgba(0,214,143,0.08);
+  --bg:          #0b1326;
+  --surface:     #131b2e;
+  --surface2:    #171f33;
+  --surface3:    #222a3d;
+  --surface4:    #2d3449;
+  --border:      #2d3449;
+  --border2:     #3d494c;
+  --text:        #dae2fd;
+  --text2:       #bcc9cd;
+  --text3:       #869397;
+  --accent:      #4cd7f6;
+  --accent-dim:  rgba(76,215,246,0.12);
+  --accent-glow: rgba(76,215,246,0.25);
+  --green:       #4edea3;
+  --green-dim:   rgba(78,222,163,0.12);
   --amber:       #f5a623;
-  --amber-dim:   rgba(245,166,35,0.08);
-  --red:         #ff4b6e;
-  --red-dim:     rgba(255,75,110,0.08);
-  --purple:      #a78bfa;
-  --scanner-bg:  #061018;
+  --amber-dim:   rgba(245,166,35,0.12);
+  --red:         #ffb4ab;
+  --red-dim:     rgba(147,0,10,0.25);
+  --purple:      #c4e7ff;
+  --scanner-bg:  #060e20;
 }
 :root[data-theme="light"] {
   --bg:          #f4f6f9;
   --surface:     #ffffff;
   --surface2:    #f0f3f7;
   --surface3:    #e5eaf0;
+  --surface4:    #dde3ec;
   --border:      #dde3ec;
   --border2:     #c8d3df;
-  --text:        #0f1923;
+  --text:        #0b1326;
   --text2:       #4a6074;
   --text3:       #8fa5b8;
   --accent:      #0088cc;
@@ -48,21 +50,70 @@
 }
 
 * { box-sizing:border-box; margin:0; padding:0; }
-html,body { height:100%; width:100%; margin:0; padding:0; overflow:hidden; }
-app-root { display: flex !important; flex-direction: column; height: 100vh; width: 100vw; }
+html, body {
+  min-height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+app-root {
+  display: flex !important;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Geist', sans-serif;
-  font-size: 13px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  line-height: 1.4;
   transition: background .25s, color .25s;
 }
-::-webkit-scrollbar { width:3px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
 
-/* ─── UTILITY ─────────────────────────────────────────── */
-.mono { font-family:'Geist Mono',monospace; }
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined', 'Material Icons', sans-serif !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  vertical-align: middle;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+/* ─── UTILITY & TYPOGRAPHY (25% Compact & Less Bold) ─── */
+.font-headline-lg { font-family: 'Space Grotesk', sans-serif; font-size: 24px; line-height: 30px; letter-spacing: -0.01em; font-weight: 600; }
+.font-headline-md { font-family: 'Space Grotesk', sans-serif; font-size: 17px; line-height: 22px; font-weight: 500; }
+.font-display-lg { font-family: 'Space Grotesk', sans-serif; font-size: 34px; line-height: 40px; letter-spacing: -0.02em; font-weight: 600; }
+.font-body-lg { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; line-height: 20px; font-weight: 500; }
+.font-body-md { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; line-height: 17px; font-weight: 400; }
+.font-caption { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; line-height: 14px; letter-spacing: 0.02em; font-weight: 400; }
+.font-label-code-lg { font-family: 'JetBrains Mono', monospace; font-size: 16px; line-height: 22px; letter-spacing: 0.12em; font-weight: 500; }
+.font-label-code-md { font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 15px; letter-spacing: 0.06em; font-weight: 400; }
+.font-label-numeric-keypad { font-family: 'Space Grotesk', sans-serif; font-size: 17px; line-height: 20px; font-weight: 500; }
+
+.mono { font-family:'JetBrains Mono',monospace; }
 .surface { background:var(--surface); }
 .surface2 { background:var(--surface2); }
 .border-c { border:1px solid var(--border); }

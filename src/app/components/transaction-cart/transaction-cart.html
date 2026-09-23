@@ -1,121 +1,202 @@
-<div style="flex:1;display:flex;flex-direction:column;background:var(--bg);min-height:0;">
-
-  <!-- TX header -->
-  <div style="padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:8px;flex-shrink:0;">
-    <div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:12px;font-weight:600;">Transaction</span>
-        <span class="tag tag-accent mono">{{ pos.txCounter() | number:'3.0-0' }}</span>
-        <span class="tag tag-dim mono">{{ 'now' | date:'dd MMM' }}</span>
+<div class="flex-1 flex flex-col bg-surface-container-low/95 backdrop-blur-xl border border-surface-container-high rounded-xl p-2 sm:p-2.5 shadow-lg justify-between h-full min-h-0 select-none">
+  
+  <!-- Top: TX Header & Customer Attachment -->
+  <div class="space-y-1 shrink-0 pb-1.5 border-b border-surface-container-high">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-1.5">
+        <span class="font-headline-md text-caption text-on-surface font-semibold">TX</span>
+        <span class="font-label-code-md text-[10px] px-1.5 py-0.2 rounded bg-primary/20 text-primary font-semibold">
+          #{{ pos.txCounter() | number:'3.0-0' }}
+        </span>
+        <button (click)="onOpenCustomerModal()" 
+                class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-primary font-caption text-[10px] cursor-pointer transition-colors border border-surface-container-highest">
+          <span class="material-symbols-outlined text-[13px]" style="width:13px;height:13px;">person</span>
+          <span class="max-w-[80px] truncate font-medium">{{ customerName() }}</span>
+        </button>
       </div>
-    </div>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:5px;">
-      <!-- Customer -->
-      <button (click)="onOpenCustomerModal()" class="btn btn-ghost btn-xs">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0116 0"/></svg>
-        <span>{{ customerName() }}</span>
-      </button>
-      <button (click)="pos.holdTransaction()" class="btn btn-ghost btn-xs">Hold</button>
-      <button (click)="onVoid()" class="btn btn-danger btn-xs">Void TX</button>
-      <button (click)="pos.clearCart()" class="btn btn-danger btn-xs">Clear</button>
+
+      <div class="flex items-center gap-1">
+        <button (click)="pos.holdTransaction()" 
+                class="px-2 py-0.5 rounded-md bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface font-caption text-[10px] uppercase font-medium transition-colors cursor-pointer border border-surface-container-highest">
+          Hold
+        </button>
+        <button (click)="onVoid()" 
+                class="px-2 py-0.5 rounded-md bg-error-container/30 hover:bg-error-container text-error font-caption text-[10px] uppercase font-medium transition-colors cursor-pointer border border-error/30">
+          Void
+        </button>
+        <button (click)="pos.clearCart()" 
+                class="px-2 py-0.5 rounded-md bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface font-caption text-[10px] uppercase font-medium transition-colors cursor-pointer border border-surface-container-highest">
+          Clear
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Cart items -->
-  <div class="thin-scroll" style="flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:4px;">
-    <!-- Empty state -->
-    <div *ngIf="pos.cart().length === 0" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
-      <div style="width:48px;height:48px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;">
-         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text3);"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      </div>
-      <div style="font-size:12px;color:var(--text2);">Cart is empty</div>
-      <div style="font-size:10px;color:var(--text3);">Scan a barcode or select a product</div>
-    </div>
+  <!-- Center: Itemized Cart Stream -->
+  <div class="flex-1 min-h-0 overflow-y-auto py-1.5 space-y-1.5 pr-1">
     
-    <!-- Items -->
-    <ng-container *ngIf="pos.cart().length > 0">
-      <div *ngFor="let item of pos.cart(); let idx = index; trackBy: trackByItem" 
-           class="cart-item fade-up" 
-           [class.selected]="idx === pos.selectedItemIdx()"
-           (click)="onSelect(idx)">
-        <span style="font-size:16px;flex-shrink:0;">{{ item.emoji }}</span>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.name }}</div>
-          <div style="display:flex;align-items:center;gap:4px;">
-            <span class="tag tag-dim mono" style="font-size:9px;padding:1px 4px;">{{ item.sku }}</span>
-            <span *ngIf="item.unit !== 'Single'" class="tag tag-accent mono" style="font-size:9px;padding:1px 4px;">{{ item.unit }}</span>
-            <span class="mono" style="font-size:10px;color:var(--text2);">₦{{ item.price.toLocaleString() }} × {{ item.qty }}</span>
-          </div>
+    <!-- Empty Cart State -->
+    <div *ngIf="pos.cart().length === 0" class="h-full flex flex-col items-center justify-center text-center p-4 gap-1.5">
+      <div class="w-10 h-10 rounded-xl bg-surface-container-high/60 flex items-center justify-center text-outline shadow-inner">
+        <span class="material-symbols-outlined text-[22px]" style="width:22px;height:22px;">shopping_basket</span>
+      </div>
+      <span class="font-body-md text-[11px] font-medium text-on-surface">Cart is empty</span>
+      <span class="font-caption text-[10px] text-on-surface-variant max-w-[180px]">Scan barcode with scanner or select items</span>
+    </div>
+
+    <!-- Items List -->
+    <div *ngFor="let item of pos.cart(); let idx = index; trackBy: trackByItem"
+         (click)="onSelect(idx)"
+         class="p-2 rounded-lg border flex items-center justify-between shadow-sm transition-all"
+         [class.bg-surface-container]="idx !== pos.selectedItemIdx()"
+         [class.border-surface-container-high]="idx !== pos.selectedItemIdx()"
+         [class.bg-surface-container-high]="idx === pos.selectedItemIdx()"
+         [class.border-primary]="idx === pos.selectedItemIdx()"
+         [class.shadow-[0_0_10px_rgba(76,215,246,0.15)]]="idx === pos.selectedItemIdx()">
+      
+      <!-- Item Info -->
+      <div class="flex-1 min-w-0 pr-1.5">
+        <div class="flex items-center gap-1">
+          <span class="font-body-md text-[11px] font-medium text-on-surface truncate">{{ item.name }}</span>
+          <span class="font-label-code-md text-[9px] text-primary bg-primary/10 px-1 rounded font-medium">
+            {{ getItemCode(item) }}
+          </span>
+          <span *ngIf="item.unit && item.unit !== 'Single'" class="font-label-code-md text-[9px] text-tertiary bg-tertiary/10 px-1 rounded">
+            {{ item.unit }}
+          </span>
         </div>
-        <span *ngIf="item.discount > 0" class="tag tag-amber" style="font-size:10px;">-₦{{ item.discount.toLocaleString() }}</span>
-        <div style="text-align:right;flex-shrink:0;">
-          <div class="mono" style="font-size:12px;font-weight:700;color:var(--text);">₦{{ ((item.price * item.qty) - item.discount).toLocaleString() }}</div>
-          <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end;margin-top:3px;">
-            <button (click)="onChangeQty(idx, -1, $event)" title="Decrease quantity" style="width:20px;height:22px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--text2);padding:0;">−</button>
-            <input type="text" 
-                   inputmode="numeric" 
-                   pattern="[0-9]*" 
-                   [value]="item.qty" 
-                   (click)="$event.stopPropagation()" 
-                   (focus)="onQtyFocus(idx, $event)" 
-                   (blur)="onCommitQty(idx, $event)" 
-                   (keydown)="onQtyKeyDown($event, idx)" 
-                   (dblclick)="onPromptQty(idx, $event)" 
-                   class="qty-input mono" 
-                   style="width:56px;height:22px;" 
-                   title="Type quantity (e.g. 10, 100, 1000) or double-click for prompt">
-            <button (click)="onChangeQty(idx, 1, $event)" title="Increase quantity" style="width:20px;height:22px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--text2);padding:0;">+</button>
-            <button (click)="onRemove(idx, $event)" title="Remove item" style="width:20px;height:22px;border-radius:4px;background:var(--red-dim);border:1px solid rgba(255,75,110,.2);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--red);margin-left:2px;padding:0;">✕</button>
-          </div>
+        <div class="font-label-code-md text-[10px] text-on-surface-variant flex items-center gap-1.5 mt-0.5">
+          <span>{{ item.qty }} × ₦{{ item.price.toLocaleString() }}</span>
+          <span class="text-secondary font-semibold">₦{{ ((item.price * item.qty) - (item.discount || 0)).toLocaleString() }}</span>
+          <span *ngIf="item.discount > 0" class="text-amber-400 font-medium">-₦{{ item.discount.toLocaleString() }}</span>
         </div>
       </div>
-    </ng-container>
+
+      <!-- Quantity Stepper & Delete Button -->
+      <div class="flex items-center gap-1 shrink-0">
+        <div class="flex items-center bg-surface-container-lowest border border-surface-container-high rounded-md p-0.5 shadow-inner">
+          <button (click)="onChangeQty(idx, -1, $event)" 
+                  class="w-6 h-6 rounded flex items-center justify-center text-on-surface hover:bg-surface-container text-xs font-semibold transition-colors cursor-pointer">-</button>
+          <span (dblclick)="onPromptQty(idx, $event)" 
+                class="font-label-code-md text-[11px] px-1 text-on-surface font-semibold min-w-[22px] text-center cursor-pointer"
+                title="Double click to type exact quantity">
+            {{ item.qty }}
+          </span>
+          <button (click)="onChangeQty(idx, 1, $event)" 
+                  class="w-6 h-6 rounded flex items-center justify-center text-on-surface hover:bg-surface-container text-xs font-semibold transition-colors cursor-pointer">+</button>
+        </div>
+
+        <button (click)="onRemove(idx, $event)" 
+                class="w-6 h-6 rounded flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors cursor-pointer" 
+                title="Remove item">
+          <span class="material-symbols-outlined text-[15px]" style="width:15px;height:15px;">delete</span>
+        </button>
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- Promo row -->
-  <div *ngIf="pos.appliedPromo() as promo" style="padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--accent-d);flex-shrink:0;">
-    <div style="display:flex;align-items:center;gap:6px;">
-      <span style="font-size:16px;">🏷️</span>
-      <span class="mono" style="font-size:12px;font-weight:700;color:var(--accent);">{{ promo.code }}</span>
-      <span style="font-size:11px;color:var(--text2);">applied</span>
+  <!-- Promo Banner If Applied -->
+  <div *ngIf="pos.appliedPromo() as promo" class="py-1 px-2.5 mb-1.5 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-between shrink-0">
+    <div class="flex items-center gap-1 text-primary text-[10px] font-medium">
+      <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">loyalty</span>
+      <span>Promo: {{ promo.code }}</span>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <span class="mono" style="font-size:12px;font-weight:700;color:var(--accent);">-₦{{ promo.amount.toLocaleString() }}</span>
-      <button (click)="pos.appliedPromo.set(null)" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0 4px;">&times;</button>
+    <div class="flex items-center gap-1.5">
+      <span class="font-label-code-md text-[10px] text-secondary font-semibold">-₦{{ promo.amount.toLocaleString() }}</span>
+      <button (click)="pos.appliedPromo.set(null)" class="text-error hover:text-error-container text-[11px] font-bold cursor-pointer">&times;</button>
     </div>
   </div>
 
-  <!-- Totals panel -->
-  <div style="padding:10px 14px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;">
-    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:11px;color:var(--text2);">Subtotal</span>
-        <span class="mono" style="font-size:11px;">{{ fmt(pos.subtotal()) }}</span>
+  <!-- Bottom: Financial Ledger & Charge CTA -->
+  <div class="pt-1.5 space-y-1.5 shrink-0 border-t border-surface-container-high">
+    
+    <!-- Ledger Calculations Box -->
+    <div class="bg-surface-container-lowest/90 border border-surface-container-high rounded-lg p-2 space-y-1 shadow-inner">
+      <div class="flex items-center justify-between font-label-code-md text-[10px] text-on-surface-variant">
+        <span>Subtotal ({{ pos.cart().length }} items)</span>
+        <span class="text-on-surface font-medium">₦{{ pos.subtotal().toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
       </div>
-      <div *ngIf="pos.totalDiscount() > 0" style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:11px;color:var(--amber);">Discount</span>
-        <span class="mono" style="font-size:11px;color:var(--amber);">-{{ fmt(pos.totalDiscount()) }}</span>
+
+      <div class="flex items-center justify-between font-label-code-md text-[10px] text-on-surface-variant">
+        <span>VAT / Service Tax (7.5%)</span>
+        <span class="text-on-surface font-medium">₦{{ pos.vat().toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:11px;color:var(--text2);">VAT (7.5%)</span>
-        <span class="mono" style="font-size:11px;">{{ fmt(pos.vat()) }}</span>
+
+      <div *ngIf="pos.totalDiscount() > 0" class="flex items-center justify-between font-label-code-md text-[10px] text-secondary">
+        <span>Promotion / Discount Applied</span>
+        <span>-₦{{ pos.totalDiscount().toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
       </div>
-      <div class="divider" style="margin:4px 0;"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:15px;font-weight:700;">TOTAL</span>
-        <span class="mono" style="font-size:22px;font-weight:700;color:var(--green);">{{ fmt(pos.grandTotal()) }}</span>
+
+      <div *ngIf="pos.giftCardDiscount() > 0" class="flex items-center justify-between font-label-code-md text-[10px] text-primary">
+        <span>Gift Card Applied</span>
+        <span>-₦{{ pos.giftCardDiscount().toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
       </div>
-      <div *ngIf="pos.giftCardDiscount() > 0" style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
-        <span style="font-size:11px;color:var(--accent);">Gift Card Applied</span>
-        <span class="mono" style="font-size:11px;color:var(--accent);">-{{ fmt(pos.giftCardDiscount()) }}</span>
-      </div>
-      <div *ngIf="pos.giftCardDiscount() > 0" style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
-        <span style="font-size:12px;font-weight:700;color:var(--text);">Balance Due</span>
-        <span class="mono" style="font-size:14px;font-weight:700;color:var(--amber);">{{ fmt(pos.amountDue()) }}</span>
+
+      <div class="pt-1 border-t border-surface-container-high flex items-baseline justify-between">
+        <span class="font-headline-md text-[11px] uppercase tracking-wider text-on-surface font-semibold">Total Due</span>
+        <span class="font-headline-md text-headline-md font-semibold text-secondary tracking-tight">
+          ₦{{ pos.amountDue().toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+        </span>
       </div>
     </div>
-    <button (click)="onOpenPayModal()" class="btn btn-accent" style="width:100%;justify-content:center;font-size:14px;font-weight:700;padding:11px;border-radius:8px;" [disabled]="pos.cart().length === 0">
-      {{ pos.amountDue() === 0 && pos.giftCardDiscount() > 0 ? 'Complete TX (Paid)' : ('Charge ' + fmt(pos.amountDue())) }}
+
+    <!-- Quick Pay Tender Chips -->
+    <div class="grid grid-cols-4 gap-1">
+      <button (click)="selectTender('CASH')" 
+              class="p-1.5 rounded-lg border flex flex-col items-center gap-0.5 transition-all cursor-pointer"
+              [class.bg-surface-container-high]="selectedTender() === 'CASH'"
+              [class.border-secondary]="selectedTender() === 'CASH'"
+              [class.shadow-[0_0_8px_rgba(78,222,163,0.25)]]="selectedTender() === 'CASH'"
+              [class.bg-surface-container]="selectedTender() !== 'CASH'"
+              [class.border-surface-container-highest]="selectedTender() !== 'CASH'">
+        <span class="material-symbols-outlined text-[16px] text-secondary" style="width:16px;height:16px;">payments</span>
+        <span class="font-caption text-[10px] font-medium uppercase text-on-surface">Cash</span>
+      </button>
+
+      <button (click)="selectTender('CARD')" 
+              class="p-1.5 rounded-lg border flex flex-col items-center gap-0.5 transition-all cursor-pointer"
+              [class.bg-surface-container-high]="selectedTender() === 'CARD'"
+              [class.border-primary]="selectedTender() === 'CARD'"
+              [class.shadow-[0_0_8px_rgba(76,215,246,0.25)]]="selectedTender() === 'CARD'"
+              [class.bg-surface-container]="selectedTender() !== 'CARD'"
+              [class.border-surface-container-highest]="selectedTender() !== 'CARD'">
+        <span class="material-symbols-outlined text-[16px] text-primary" style="width:16px;height:16px;">credit_card</span>
+        <span class="font-caption text-[10px] font-medium uppercase text-on-surface">Card</span>
+      </button>
+
+      <button (click)="selectTender('GIFTCARD')" 
+              class="p-1.5 rounded-lg border flex flex-col items-center gap-0.5 transition-all cursor-pointer"
+              [class.bg-surface-container-high]="selectedTender() === 'GIFTCARD'"
+              [class.border-tertiary]="selectedTender() === 'GIFTCARD'"
+              [class.shadow-[0_0_8px_rgba(123,208,255,0.25)]]="selectedTender() === 'GIFTCARD'"
+              [class.bg-surface-container]="selectedTender() !== 'GIFTCARD'"
+              [class.border-surface-container-highest]="selectedTender() !== 'GIFTCARD'">
+        <span class="material-symbols-outlined text-[16px] text-tertiary" style="width:16px;height:16px;">card_giftcard</span>
+        <span class="font-caption text-[10px] font-medium uppercase text-on-surface">Gift</span>
+      </button>
+
+      <button (click)="selectTender('TRANSFER')" 
+              class="p-1.5 rounded-lg border flex flex-col items-center gap-0.5 transition-all cursor-pointer"
+              [class.bg-surface-container-high]="selectedTender() === 'TRANSFER'"
+              [class.border-purple-300]="selectedTender() === 'TRANSFER'"
+              [class.shadow-[0_0_8px_rgba(196,231,255,0.25)]]="selectedTender() === 'TRANSFER'"
+              [class.bg-surface-container]="selectedTender() !== 'TRANSFER'"
+              [class.border-surface-container-highest]="selectedTender() !== 'TRANSFER'">
+        <span class="material-symbols-outlined text-[16px] text-on-surface-variant" style="width:16px;height:16px;">account_balance</span>
+        <span class="font-caption text-[10px] font-medium uppercase text-on-surface">Bank</span>
+      </button>
+    </div>
+
+    <!-- Primary Charge Button -->
+    <button (click)="onOpenPayModal()" 
+            [disabled]="pos.cart().length === 0"
+            class="w-full py-2.5 px-3 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-headline-md text-caption font-semibold tracking-tight shadow-[0_0_16px_rgba(76,215,246,0.35)] hover:shadow-[0_0_22px_rgba(76,215,246,0.5)] transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+      <span class="material-symbols-outlined font-bold text-[18px]" style="width:18px;height:18px;">bolt</span>
+      <span>Charge ₦{{ pos.amountDue().toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
     </button>
+
   </div>
+
 </div>
