@@ -1,410 +1,440 @@
-<div class="modal-overlay" *ngIf="isOpen" (click)="closeModal()">
-  <div class="modal-container card-center-container" (click)="$event.stopPropagation()">
+<div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-surface-container-lowest/85 backdrop-blur-xl animate-fade-in select-none">
+  
+  <div class="w-full max-w-5xl max-h-[92vh] flex flex-col bg-surface-container-low border border-surface-container-high rounded-2xl shadow-2xl overflow-hidden relative">
     
-    <!-- Modal Header with Tab Navigation -->
-    <div class="modal-header">
-      <div class="header-title">
-        <span class="icon">💳</span>
-        <span>Terminal Card Center</span>
-      </div>
-      
-      <div class="tab-nav">
-        <button 
-          class="tab-btn" 
-          [class.active]="activeTab() === 'issue'" 
-          (click)="activeTab.set('issue')">
-          🆕 Issue Card
-        </button>
-        <button 
-          class="tab-btn" 
-          [class.active]="activeTab() === 'operations'" 
-          (click)="activeTab.set('operations')">
-          ⚡ Card Operations
-        </button>
-        <button 
-          class="tab-btn" 
-          [class.active]="activeTab() === 'replace'" 
-          (click)="activeTab.set('replace')">
-          🔄 Lost Card Recovery
-        </button>
+    <!-- Top Operations Sub-Header & Function Tabs -->
+    <div class="w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-surface-container/90 px-6 py-4 border-b border-surface-container-high shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shadow-inner border border-surface-container-highest">
+          <span class="material-symbols-outlined text-[24px]" style="width:24px;height:24px;">contactless</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-headline-md text-headline-md text-on-surface font-bold">Card Management Center</h1>
+            <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-code-md text-caption border border-primary/20">NFC / RFID L3</span>
+          </div>
+          <p class="font-caption text-[11px] text-on-surface-variant">Manage customer stored-value cards, loyalty issuance & EMV tokenization</p>
+        </div>
       </div>
 
-      <button class="close-btn" (click)="closeModal()">&times;</button>
+      <!-- Pill Nav Tabs -->
+      <div class="flex items-center gap-1.5 bg-surface-container-lowest p-1 rounded-xl border border-surface-container-high self-stretch md:self-auto overflow-x-auto">
+        <button (click)="activeTab.set('issue')" 
+                class="px-3.5 py-1.5 rounded-lg font-body-md text-[11px] uppercase tracking-wider font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                [class.bg-primary]="activeTab() === 'issue'"
+                [class.text-on-primary]="activeTab() === 'issue'"
+                [class.shadow-md]="activeTab() === 'issue'"
+                [class.text-on-surface-variant]="activeTab() !== 'issue'">
+          <span class="material-symbols-outlined text-[15px]" style="width:15px;height:15px;">add_card</span>
+          <span>Issue New Card</span>
+        </button>
+
+        <button (click)="activeTab.set('operations')" 
+                class="px-3.5 py-1.5 rounded-lg font-body-md text-[11px] uppercase tracking-wider font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                [class.bg-primary]="activeTab() === 'operations'"
+                [class.text-on-primary]="activeTab() === 'operations'"
+                [class.shadow-md]="activeTab() === 'operations'"
+                [class.text-on-surface-variant]="activeTab() !== 'operations'">
+          <span class="material-symbols-outlined text-[15px]" style="width:15px;height:15px;">bolt</span>
+          <span>Card Operations</span>
+        </button>
+
+        <button (click)="activeTab.set('replace')" 
+                class="px-3.5 py-1.5 rounded-lg font-body-md text-[11px] uppercase tracking-wider font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+                [class.bg-primary]="activeTab() === 'replace'"
+                [class.text-on-primary]="activeTab() === 'replace'"
+                [class.shadow-md]="activeTab() === 'replace'"
+                [class.text-on-surface-variant]="activeTab() !== 'replace'">
+          <span class="material-symbols-outlined text-[15px]" style="width:15px;height:15px;">published_with_changes</span>
+          <span>Lost Card Recovery</span>
+        </button>
+
+        <button (click)="closeModal()" class="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface ml-1 cursor-pointer">
+          <span class="material-symbols-outlined text-[16px]" style="width:16px;height:16px;">close</span>
+        </button>
+      </div>
     </div>
 
-    <div class="modal-body">
+    <!-- Scrollable Modal Content -->
+    <div class="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
+
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- TAB 2: CARD OPERATIONS (PRIMARY STITCH VIEW)               -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab() === 'operations'" class="space-y-5 animate-fade-in">
+        
+        <!-- Lookup Section with NFC Terminal Emulation -->
+        <div class="w-full bg-surface-container border border-surface-container-high p-4 rounded-xl shadow-lg flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+          <div class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div class="relative flex-1">
+              <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-primary text-[20px]" style="width:20px;height:20px;">credit_card</span>
+              <input [(ngModel)]="searchCardNumber" 
+                     (keydown.enter)="searchCard()"
+                     class="w-full pl-11 pr-3.5 py-2.5 rounded-xl bg-surface-container-lowest border border-surface-container-high font-label-code-md text-body-md text-primary placeholder:text-outline/50 outline-none focus:border-primary shadow-inner" 
+                     placeholder="Scan NFC or Enter Card UID..." 
+                     type="text"
+              />
+            </div>
+            <button (click)="searchCard()" 
+                    [disabled]="isLoading() || !searchCardNumber().trim()"
+                    class="px-5 py-2.5 rounded-xl bg-primary-container hover:bg-primary font-body-md text-caption font-bold text-on-primary shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50">
+              <span *ngIf="isLoading()" class="material-symbols-outlined text-[18px] animate-spin" style="width:18px;height:18px;">sync</span>
+              <span *ngIf="!isLoading()" class="material-symbols-outlined text-[18px]" style="width:18px;height:18px;">search</span>
+              <span>Lookup Card</span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 pl-0 lg:pl-3 border-t lg:border-t-0 lg:border-l border-surface-container-high pt-2 lg:pt-0">
+            <div class="flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-surface-container-high text-on-surface-variant font-label-code-md text-[11px] flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-secondary text-[16px]" style="width:16px;height:16px;">sensors</span>
+              <span class="text-secondary font-bold">NFC READER ACTIVE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cardholder Profile & Status Banner (if card found) -->
+        <div *ngIf="searchedCard() as card" class="w-full bg-surface-container border border-surface-container-high p-5 rounded-xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden animate-fade-in">
+          <div class="flex items-center gap-4 z-10">
+            <div class="w-13 h-13 rounded-2xl bg-gradient-to-br from-primary via-primary-container to-secondary flex items-center justify-center text-surface-container-lowest font-headline-md text-headline-md font-bold shadow-lg shrink-0">
+              {{ (card.customerName || 'AO').slice(0, 2).toUpperCase() }}
+            </div>
+            <div class="flex flex-col">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <span class="font-label-code-lg text-body-lg text-on-surface font-bold tracking-wider">{{ card.cardNumber }}</span>
+                <div class="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-label-code-md font-semibold"
+                     [class.bg-secondary/15]="card.isActive && !isCardExpired(card)"
+                     [class.text-secondary]="card.isActive && !isCardExpired(card)"
+                     [class.bg-error/15]="!card.isActive || isCardExpired(card)"
+                     [class.text-error]="!card.isActive || isCardExpired(card)">
+                  <span class="w-2 h-2 rounded-full" [class.bg-secondary]="card.isActive && !isCardExpired(card)" [class.bg-error]="!card.isActive || isCardExpired(card)"></span>
+                  <span>{{ isCardExpired(card) ? 'EXPIRED' : (card.isActive ? 'ACTIVE' : 'DEACTIVATED') }}</span>
+                </div>
+              </div>
+              <div class="flex flex-wrap items-center gap-3 mt-1 font-caption text-[11px] text-on-surface-variant">
+                <span class="flex items-center gap-1 text-on-surface font-semibold">
+                  <span class="material-symbols-outlined text-primary text-[15px]" style="width:15px;height:15px;">account_circle</span>
+                  Linked: {{ card.customerName || 'Walk-in / Unlinked' }}
+                </span>
+                <span class="flex items-center gap-1 text-secondary bg-secondary-container/20 px-2 py-0.5 rounded-full">
+                  <span class="material-symbols-outlined text-[13px]" style="width:13px;height:13px;">stars</span>
+                  Loyalty Active
+                </span>
+                <span class="font-label-code-md text-[10px]">Till: {{ card.storeId ? 'STORE LINKED' : 'COUNTER 01' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 z-10 self-start md:self-auto">
+            <button *ngIf="!card.isActive && !isCardExpired(card)" (click)="activateCard()" class="px-3.5 py-1.5 rounded-lg bg-secondary text-on-secondary font-body-md text-caption font-bold shadow-md hover:bg-secondary-container transition-colors cursor-pointer">
+              Activate Card
+            </button>
+            <button *ngIf="card.isActive" (click)="deactivateCard()" class="px-3.5 py-1.5 rounded-lg bg-error-container/40 text-error font-body-md text-caption font-bold hover:bg-error-container transition-colors cursor-pointer border border-error/30">
+              Deactivate
+            </button>
+          </div>
+        </div>
+
+        <!-- Stat Metrics Row -->
+        <div *ngIf="searchedCard() as card" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <!-- Metric 1: Available Balance -->
+          <div class="bg-surface-container border border-surface-container-high p-4 rounded-xl shadow-lg flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+              <div class="flex flex-col">
+                <span class="font-caption text-[10px] uppercase tracking-wider text-outline font-bold">Available Card Balance</span>
+                <span class="font-headline-lg text-headline-md text-primary font-bold mt-1 tracking-tight">₦{{ card.balance.toLocaleString() }}</span>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-[20px]" style="width:20px;height:20px;">account_balance_wallet</span>
+              </div>
+            </div>
+            <div class="mt-3 pt-2 border-t border-surface-container-high flex items-center justify-between text-[11px] font-label-code-md text-on-surface-variant">
+              <span class="text-secondary flex items-center gap-1 font-semibold">
+                <span class="material-symbols-outlined text-[13px]" style="width:13px;height:13px;">verified</span>
+                Verified Balance
+              </span>
+              <span>Real-time Ledger</span>
+            </div>
+          </div>
+
+          <!-- Metric 2: Expiration & EMV Spec -->
+          <div class="bg-surface-container border border-surface-container-high p-4 rounded-xl shadow-lg flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+              <div class="flex flex-col">
+                <span class="font-caption text-[10px] uppercase tracking-wider text-outline font-bold">Valid Through / Expiry</span>
+                <span class="font-headline-lg text-headline-md text-on-surface font-bold mt-1 tracking-tight">
+                  {{ card.expiresAt ? (card.expiresAt | date:'yyyy-MM-dd') : 'No Expiry' }}
+                </span>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-surface-container-high text-secondary flex items-center justify-center">
+                <span class="material-symbols-outlined text-[20px]" style="width:20px;height:20px;">verified_user</span>
+              </div>
+            </div>
+            <div class="mt-3 pt-2 border-t border-surface-container-high flex items-center justify-between text-[11px] font-label-code-md text-on-surface-variant">
+              <span class="text-primary flex items-center gap-1">
+                <span class="material-symbols-outlined text-[13px]" style="width:13px;height:13px;">memory</span>
+                EMV L3 Dual-Interface
+              </span>
+              <span>Offline Auth: OK</span>
+            </div>
+          </div>
+
+          <!-- Metric 3: Card Spend Volume -->
+          <div class="bg-surface-container border border-surface-container-high p-4 rounded-xl shadow-lg flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+              <div class="flex flex-col">
+                <span class="font-caption text-[10px] uppercase tracking-wider text-outline font-bold">Card Initial Load</span>
+                <span class="font-headline-lg text-headline-md text-tertiary font-bold mt-1 tracking-tight">₦{{ (card.initialBalance || card.balance).toLocaleString() }}</span>
+              </div>
+              <div class="w-9 h-9 rounded-xl bg-tertiary-container/20 text-tertiary flex items-center justify-center">
+                <span class="material-symbols-outlined text-[20px]" style="width:20px;height:20px;">workspace_premium</span>
+              </div>
+            </div>
+            <div class="mt-3 pt-2 border-t border-surface-container-high flex items-center justify-between text-[11px] font-label-code-md text-on-surface-variant">
+              <span class="text-tertiary font-semibold flex items-center gap-1">
+                <span class="material-symbols-outlined text-[13px]" style="width:13px;height:13px;">diamond</span>
+                VIP LOYALTY
+              </span>
+              <span>Instant Redemption</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Two-Column Tactical Workspace (if card found) -->
+        <div *ngIf="searchedCard() as card" class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          
+          <!-- Left: Reload / Top-up Portal (7 cols) -->
+          <div class="lg:col-span-7 bg-surface-container border border-surface-container-high p-5 rounded-xl shadow-xl flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between pb-1 border-b border-surface-container-high">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-[20px]" style="width:20px;height:20px;">savings</span>
+                  <h3 class="font-headline-md text-body-md font-bold text-on-surface">Reload / Top-Up Balance</h3>
+                </div>
+                <span class="font-label-code-md text-[10px] text-secondary bg-secondary-container/20 px-2 py-0.5 rounded-full font-bold">INSTANT SETTLEMENT</span>
+              </div>
+
+              <!-- Top-up Input -->
+              <div>
+                <label class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Top-Up Amount (₦ NGN)</label>
+                <div class="relative flex items-center bg-surface-container-lowest border border-surface-container-high rounded-xl px-3.5 py-2.5 focus-within:border-primary transition-all">
+                  <span class="font-label-code-md text-body-lg text-primary font-bold mr-2">₦</span>
+                  <input [(ngModel)]="topUpAmount" type="number" class="w-full bg-transparent font-label-code-lg text-headline-md text-on-surface font-bold focus:outline-none" placeholder="0.00">
+                </div>
+              </div>
+
+              <!-- Quick Presets -->
+              <div>
+                <span class="font-caption text-[10px] text-outline uppercase font-semibold block mb-1">Quick Presets</span>
+                <div class="grid grid-cols-4 gap-1.5">
+                  <button (click)="setTopUpPreset(5000)" class="py-2 px-1 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-code-md text-[11px] font-semibold transition-colors cursor-pointer border border-surface-container-highest">+₦5,000</button>
+                  <button (click)="setTopUpPreset(20000)" class="py-2 px-1 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-code-md text-[11px] font-semibold transition-colors cursor-pointer border border-surface-container-highest">+₦20,000</button>
+                  <button (click)="setTopUpPreset(50000)" class="py-2 px-1 rounded-lg bg-primary/20 text-primary font-label-code-md text-[11px] font-semibold transition-colors cursor-pointer border border-primary/30">+₦50,000</button>
+                  <button (click)="setTopUpPreset(100000)" class="py-2 px-1 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-code-md text-[11px] font-semibold transition-colors cursor-pointer border border-surface-container-highest">+₦100,000</button>
+                </div>
+              </div>
+
+              <!-- Payment Method Source -->
+              <div>
+                <span class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Payment Method Source</span>
+                <div class="grid grid-cols-3 gap-1.5">
+                  <button (click)="topUpPaymentMethod.set('transfer')" 
+                          class="py-2 px-2 rounded-lg border flex flex-col items-center gap-0.5 cursor-pointer transition-all"
+                          [class.bg-primary-container]="topUpPaymentMethod() === 'transfer'"
+                          [class.text-on-primary]="topUpPaymentMethod() === 'transfer'"
+                          [class.bg-surface-container-high]="topUpPaymentMethod() !== 'transfer'"
+                          [class.text-on-surface]="topUpPaymentMethod() !== 'transfer'">
+                    <span class="material-symbols-outlined text-[18px]" style="width:18px;height:18px;">account_balance</span>
+                    <span class="font-body-md text-[11px] font-semibold">Bank Transfer</span>
+                  </button>
+
+                  <button (click)="topUpPaymentMethod.set('cash')" 
+                          class="py-2 px-2 rounded-lg border flex flex-col items-center gap-0.5 cursor-pointer transition-all"
+                          [class.bg-primary-container]="topUpPaymentMethod() === 'cash'"
+                          [class.text-on-primary]="topUpPaymentMethod() === 'cash'"
+                          [class.bg-surface-container-high]="topUpPaymentMethod() !== 'cash'"
+                          [class.text-on-surface]="topUpPaymentMethod() !== 'cash'">
+                    <span class="material-symbols-outlined text-[18px]" style="width:18px;height:18px;">payments</span>
+                    <span class="font-body-md text-[11px] font-semibold">Cash (Till)</span>
+                  </button>
+
+                  <button (click)="topUpPaymentMethod.set('pos')" 
+                          class="py-2 px-2 rounded-lg border flex flex-col items-center gap-0.5 cursor-pointer transition-all"
+                          [class.bg-primary-container]="topUpPaymentMethod() === 'pos'"
+                          [class.text-on-primary]="topUpPaymentMethod() === 'pos'"
+                          [class.bg-surface-container-high]="topUpPaymentMethod() !== 'pos'"
+                          [class.text-on-surface]="topUpPaymentMethod() !== 'pos'">
+                    <span class="material-symbols-outlined text-[18px]" style="width:18px;height:18px;">point_of_sale</span>
+                    <span class="font-body-md text-[11px] font-semibold">Terminal POS</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Projected Balance Summary -->
+              <div class="p-3 rounded-xl bg-surface-container-lowest border border-surface-container-high flex items-center justify-between text-caption font-label-code-md">
+                <span class="text-on-surface-variant">New Projected Balance:</span>
+                <span class="font-bold text-primary text-body-md">₦{{ projectedBalance().toLocaleString() }}</span>
+              </div>
+            </div>
+
+            <!-- Reload CTA -->
+            <button (click)="performTopUp()" 
+                    [disabled]="topUpAmount() <= 0 || !card.isActive || isCardExpired(card)"
+                    class="w-full py-3.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-headline-md text-caption font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+              <span class="material-symbols-outlined text-[20px]" style="width:20px;height:20px;">verified</span>
+              <span>Process Top-Up (₦{{ topUpAmount().toLocaleString() }})</span>
+            </button>
+          </div>
+
+          <!-- Right: Security & Status Controls (5 cols) -->
+          <div class="lg:col-span-5 bg-surface-container border border-surface-container-high p-5 rounded-xl shadow-xl flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between pb-1 border-b border-surface-container-high">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-error text-[20px]" style="width:20px;height:20px;">lock_person</span>
+                  <h3 class="font-headline-md text-body-md font-bold text-on-surface">Security & Freeze</h3>
+                </div>
+                <span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-label-code-md text-[10px]">SUPERVISOR</span>
+              </div>
+
+              <!-- Reason Input -->
+              <div>
+                <label class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Reason for status change</label>
+                <textarea [(ngModel)]="deactivateReason" rows="3" placeholder="e.g. Temporary suspension or reported stolen..." class="w-full bg-surface-container-lowest border border-surface-container-high rounded-xl p-3 font-body-md text-caption text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-error resize-none"></textarea>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <button *ngIf="card.isActive" (click)="deactivateCard()" class="w-full py-3 rounded-xl bg-error hover:bg-error-container text-on-error font-headline-md text-caption font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]" style="width:18px;height:18px;">lock</span>
+                <span>Deactivate Card Immediately</span>
+              </button>
+
+              <button *ngIf="!card.isActive && !isCardExpired(card)" (click)="activateCard()" class="w-full py-3 rounded-xl bg-secondary hover:bg-secondary-container text-on-secondary font-headline-md text-caption font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]" style="width:18px;height:18px;">lock_open</span>
+                <span>Activate Card</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
 
       <!-- ══════════════════════════════════════════════════════════ -->
       <!-- TAB 1: ISSUE NEW CARD                                     -->
       <!-- ══════════════════════════════════════════════════════════ -->
-      <div *ngIf="activeTab() === 'issue'" class="tab-content issue-tab">
-        <div class="card-display">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <span class="card-number-label">Generated Card</span>
-            <button class="btn btn-secondary btn-xs" (click)="generateNewCard()">Regenerate</button>
-          </div>
-          
-          <input 
-            type="text" 
-            [ngModel]="cardNumber()" 
-            readonly
-            class="card-number-input mono" 
-            style="width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px; border-radius: 8px; font-size: 1.15rem; text-align: center; margin-bottom: 12px; font-weight:700;">
-
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-            <div class="input-group">
-              <label>Default PIN</label>
-              <input 
-                type="text" 
-                [(ngModel)]="pin" 
-                maxlength="6"
-                class="pin-input mono">
+      <div *ngIf="activeTab() === 'issue'" class="max-w-2xl mx-auto space-y-4 animate-fade-in">
+        <div class="bg-surface-container border border-surface-container-high rounded-2xl p-6 shadow-xl space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-surface-container-high">
+            <div>
+              <span class="font-caption text-[10px] text-primary uppercase font-bold tracking-widest">Card Issuance Hub</span>
+              <h3 class="font-headline-md text-body-lg text-on-surface font-bold">Generate New Stored-Value Card</h3>
             </div>
+            <button (click)="generateNewCard()" class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-caption text-caption flex items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-[15px]" style="width:15px;height:15px;">refresh</span>
+              <span>Regenerate UID</span>
+            </button>
+          </div>
 
-            <div class="input-group">
-              <label>Initial Load (₦)</label>
-              <input 
-                type="number" 
-                [(ngModel)]="amount" 
-                placeholder="0.00"
-                class="pin-input mono"
-                style="color: var(--accent); font-weight:700;">
+          <!-- Card Number Field -->
+          <div>
+            <label class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Card UID / Number</label>
+            <input [ngModel]="cardNumber()" readonly class="w-full bg-surface-container-lowest border border-surface-container-high rounded-xl p-3 font-label-code-lg text-headline-md text-primary font-bold text-center tracking-wider">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Default PIN</label>
+              <input [(ngModel)]="pin" maxlength="6" class="w-full bg-surface-container-lowest border border-surface-container-high rounded-xl p-3 font-label-code-md text-body-md text-on-surface font-bold text-center">
+            </div>
+            <div>
+              <label class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Initial Load Amount (₦)</label>
+              <input [(ngModel)]="amount" type="number" placeholder="0.00" class="w-full bg-surface-container-lowest border border-surface-container-high rounded-xl p-3 font-label-code-md text-body-md text-secondary font-bold text-center">
             </div>
           </div>
 
-          <!-- Activation Toggle (Default False) -->
-          <div class="activation-toggle-box" style="margin-top:14px; background: rgba(0,0,0,0.2); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">
-            <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:12px; font-weight:600; color:#fff;">
-              <input 
-                type="checkbox" 
-                [(ngModel)]="activateImmediately"
-                style="width:18px; height:18px; accent-color: #10b981;">
-              Activate Card Immediately upon sale
-            </label>
-            <div style="font-size:11px; color:#94a3b8; margin-top:4px; margin-left:28px;">
-              By default, cards are created in <strong>Deactivated</strong> status until activated by staff.
-            </div>
+          <!-- Quick Load Presets -->
+          <div class="grid grid-cols-4 gap-1.5">
+            <button (click)="setIssuePreset(5000)" class="py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-code-md text-[11px] font-semibold cursor-pointer">+₦5,000</button>
+            <button (click)="setIssuePreset(10000)" class="py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-code-md text-[11px] font-semibold cursor-pointer">+₦10,000</button>
+            <button (click)="setIssuePreset(20000)" class="py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-code-md text-[11px] font-semibold cursor-pointer">+₦20,000</button>
+            <button (click)="setIssuePreset(50000)" class="py-2 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-code-md text-[11px] font-semibold cursor-pointer">+₦50,000</button>
           </div>
-        </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:16px;">
-          <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-          <button 
-            class="btn btn-primary" 
-            (click)="onAddToCart()" 
-            [disabled]="amount() <= 0">
-            Add Card to Cart (₦{{ amount() | number:'1.2-2' }})
-          </button>
+          <!-- Activation Toggle -->
+          <div class="p-3 bg-surface-container-lowest border border-surface-container-high rounded-xl flex items-center justify-between">
+            <div class="flex flex-col">
+              <span class="font-body-md text-caption font-semibold text-on-surface">Activate Card Immediately</span>
+              <span class="font-caption text-[11px] text-on-surface-variant">By default, cards are created in deactivated state until staff activates.</span>
+            </div>
+            <input [(ngModel)]="activateImmediately" type="checkbox" class="w-5 h-5 accent-secondary cursor-pointer">
+          </div>
+
+          <div class="flex justify-end gap-2 pt-2">
+            <button (click)="closeModal()" class="px-4 py-2.5 rounded-xl bg-surface-container-high text-on-surface-variant hover:text-on-surface font-body-md text-caption font-semibold cursor-pointer">
+              Cancel
+            </button>
+            <button (click)="onAddToCart()" [disabled]="amount() <= 0" class="px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-headline-md text-caption font-bold shadow-md cursor-pointer disabled:opacity-50">
+              Add Card to Cart (₦{{ amount().toLocaleString() }})
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- ══════════════════════════════════════════════════════════ -->
-      <!-- TAB 2: CARD OPERATIONS (ACTIVATE, TOP-UP, STATUS)         -->
+      <!-- TAB 3: LOST CARD RECOVERY / REPLACE                       -->
       <!-- ══════════════════════════════════════════════════════════ -->
-      <div *ngIf="activeTab() === 'operations'" class="tab-content operations-tab">
-        <div class="search-row" style="display:flex; gap:10px; margin-bottom:16px;">
-          <div style="flex:1; position:relative;">
-            <input 
-              type="text" 
-              [(ngModel)]="searchCardNumber" 
-              (keyup.enter)="searchCard()"
-              class="inp mono" 
-              placeholder="Enter card number to lookup..." 
-              style="width:100%; padding:10px 12px; font-size:13px;">
-          </div>
-          <button class="btn btn-primary" (click)="searchCard()" [disabled]="isLoading()">
-            {{ isLoading() ? 'Searching...' : 'Lookup Card' }}
-          </button>
-        </div>
-
-        <div *ngIf="searchedCard()" class="card-details-panel">
-          <div class="card-status-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <div>
-              <span class="mono" style="font-size:16px; font-weight:700; color:#fff;">{{ searchedCard().cardNumber }}</span>
-              <div *ngIf="searchedCard().customerName" style="font-size:12px; color:#38bdf8; margin-top:2px;">
-                👤 Linked: {{ searchedCard().customerName }} (⭐ {{ searchedCard().customerPointsBalance || 0 }} pts)
-              </div>
-            </div>
-
-            <!-- Status Badges -->
-            <div>
-              <span *ngIf="isCardExpired(searchedCard())" class="badge badge-expired">
-                ⚫ EXPIRED
-              </span>
-              <span *ngIf="!isCardExpired(searchedCard()) && searchedCard().isActive" class="badge badge-active">
-                🟢 ACTIVE
-              </span>
-              <span *ngIf="!isCardExpired(searchedCard()) && !searchedCard().isActive" class="badge badge-inactive">
-                🔴 DEACTIVATED
-              </span>
-            </div>
+      <div *ngIf="activeTab() === 'replace'" class="max-w-2xl mx-auto space-y-4 animate-fade-in">
+        <div class="bg-surface-container border border-surface-container-high rounded-2xl p-6 shadow-xl space-y-4">
+          <div class="pb-2 border-b border-surface-container-high">
+            <span class="font-caption text-[10px] text-primary uppercase font-bold tracking-widest">Balance Migration Protocol</span>
+            <h3 class="font-headline-md text-body-lg text-on-surface font-bold">Lost Card Recovery & Migration</h3>
           </div>
 
-          <!-- Financial Snapshot -->
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px;">
-            <div class="stat-card">
-              <span class="stat-label">Available Balance</span>
-              <span class="stat-val" style="color:var(--accent);">₦{{ searchedCard().balance | number:'1.2-2' }}</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">Expires At</span>
-              <span class="stat-val">{{ searchedCard().expiresAt || 'Never' }}</span>
-            </div>
-          </div>
-
-          <!-- Expired Card Notice -->
-          <div *ngIf="isCardExpired(searchedCard())" class="alert-box alert-error" style="margin-bottom:14px;">
-            ⛔ <strong>Card has Expired:</strong> Expired cards can <strong>never</strong> be reactivated or reloaded. Use the <em>Lost Card Recovery</em> tab to transfer its remaining balance to a replacement card.
-          </div>
-
-          <!-- Operation Controls -->
-          <div class="operations-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-            
-            <!-- Left: Top-Up Controls -->
-            <div class="sub-card">
-              <div class="sub-card-title">💳 Reload / Top-Up Balance</div>
-              
-              <div *ngIf="!searchedCard().isActive && !isCardExpired(searchedCard())" class="alert-box alert-warning" style="font-size:11px; margin-bottom:8px;">
-                Card is deactivated. Activate below before topping up.
-              </div>
-
-              <div class="input-group" style="margin-bottom:10px;">
-                <label>Amount (₦)</label>
-                <input 
-                  type="number" 
-                  [(ngModel)]="topUpAmount" 
-                  [disabled]="!searchedCard().isActive || isCardExpired(searchedCard())"
-                  placeholder="0.00" 
-                  class="inp mono" 
-                  style="width:100%;">
-              </div>
-
-              <div class="input-group" style="margin-bottom:12px;">
-                <label>Payment Method</label>
-                <select 
-                  [(ngModel)]="topUpPaymentMethod" 
-                  [disabled]="!searchedCard().isActive || isCardExpired(searchedCard())"
-                  class="inp" 
-                  style="width:100%;">
-                  <option value="Cash">Cash</option>
-                  <option value="BankTransfer">Bank Transfer</option>
-                  <option value="MobileMoney">Mobile Money</option>
-                </select>
-              </div>
-
-              <button 
-                class="btn btn-primary" 
-                style="width:100%;"
-                (click)="performTopUp()" 
-                [disabled]="!searchedCard().isActive || isCardExpired(searchedCard()) || topUpAmount() <= 0">
-                Top-Up Card Now
-              </button>
-            </div>
-
-            <!-- Right: Activation / Deactivation -->
-            <div class="sub-card">
-              <div class="sub-card-title">🔐 Card Status Controls</div>
-
-              <div *ngIf="!searchedCard().isActive && !isCardExpired(searchedCard())">
-                <p style="font-size:12px; color:#cbd5e1; margin-bottom:12px;">
-                  This card is currently <strong>Deactivated</strong>. Activating it will allow the customer to reload and spend.
-                </p>
-                <button class="btn btn-success" style="width:100%;" (click)="activateCard()">
-                  🔓 Activate Card
-                </button>
-              </div>
-
-              <div *ngIf="searchedCard().isActive && !isCardExpired(searchedCard())">
-                <p style="font-size:12px; color:#cbd5e1; margin-bottom:10px;">
-                  Temporarily disable this card (e.g. if reported misplaced).
-                </p>
-                <input 
-                  type="text" 
-                  [(ngModel)]="deactivateReason" 
-                  placeholder="Reason for deactivation..." 
-                  class="inp" 
-                  style="width:100%; font-size:11px; margin-bottom:10px;">
-                <button class="btn btn-danger" style="width:100%;" (click)="deactivateCard()">
-                  🔒 Deactivate Card
-                </button>
-              </div>
-
-              <div *ngIf="isCardExpired(searchedCard())">
-                <p style="font-size:12px; color:#f87171;">
-                  Activation is permanently locked for expired cards.
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div *ngIf="!searchedCard() && !isLoading()" class="empty-state">
-          Enter a card number above to manage activation, recharge balance, or check status.
-        </div>
-      </div>
-
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <!-- TAB 3: LOST CARD REPLACEMENT & RECOVERY                    -->
-      <!-- ══════════════════════════════════════════════════════════ -->
-      <div *ngIf="activeTab() === 'replace'" class="tab-content replace-tab">
-        <div class="search-row" style="display:flex; gap:10px; margin-bottom:16px;">
-          <div style="flex:1;">
-            <input 
-              type="text" 
-              [(ngModel)]="lostCardSearchTerm" 
-              (keyup.enter)="searchLostCard()"
-              class="inp mono" 
-              placeholder="Enter lost or misplaced card number..." 
-              style="width:100%; padding:10px 12px; font-size:13px;">
-          </div>
-          <button class="btn btn-primary" (click)="searchLostCard()" [disabled]="isSearchingLost()">
-            {{ isSearchingLost() ? 'Searching...' : 'Find Lost Card' }}
-          </button>
-        </div>
-
-        <div *ngIf="lostCard()" class="lost-card-workflow">
-          
-          <!-- Lost Card Summary -->
-          <div class="stat-banner" style="display:flex; justify-content:space-between; align-items:center; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:12px 16px; border-radius:10px; margin-bottom:14px;">
-            <div>
-              <div style="font-size:11px; color:#fca5a5; font-weight:700; text-transform:uppercase;">Lost Card Identified</div>
-              <div class="mono" style="font-size:15px; font-weight:700; color:#fff;">{{ lostCard().cardNumber }}</div>
-              <div style="font-size:12px; color:#e2e8f0;">
-                Holder: <strong>{{ lostCard().customerName || 'None (Unattached)' }}</strong>
-              </div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:11px; color:#94a3b8;">Balance to Migrate</div>
-              <div style="font-size:18px; font-weight:800; color:#10b981;">₦{{ lostCard().balance | number:'1.2-2' }}</div>
-            </div>
-          </div>
-
-          <!-- MANDATORY CUSTOMER REGISTRATION IF UNLINKED -->
-          <div *ngIf="showRegisterCustomerForm()" class="customer-registration-card" style="background:#1e293b; border:1px solid #3b82f6; border-radius:12px; padding:16px; margin-bottom:16px;">
-            <div style="font-size:14px; font-weight:700; color:#38bdf8; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
-              <span>🛡️ Customer Registration & Identity Required</span>
-            </div>
-            <p style="font-size:12px; color:#cbd5e1; margin-bottom:12px;">
-              To protect balances and maintain compliance, unlinked cards must be attached to a customer profile before balance can be transferred.
-            </p>
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
-              <div class="input-group">
-                <label>First Name *</label>
-                <input type="text" [(ngModel)]="newCustomerFirstName" class="inp" placeholder="e.g. John">
-              </div>
-              <div class="input-group">
-                <label>Last Name</label>
-                <input type="text" [(ngModel)]="newCustomerLastName" class="inp" placeholder="e.g. Doe">
-              </div>
-            </div>
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
-              <div class="input-group">
-                <label>Phone Number *</label>
-                <input type="text" [(ngModel)]="newCustomerPhone" class="inp" placeholder="08012345678">
-              </div>
-              <div class="input-group">
-                <label>Identity Document</label>
-                <div style="display:flex; gap:6px;">
-                  <select [(ngModel)]="newCustomerIdentityType" class="inp" style="width:80px;">
-                    <option value="NIN">NIN</option>
-                    <option value="BVN">BVN</option>
-                    <option value="Passport">Passport</option>
-                  </select>
-                  <input type="password" [(ngModel)]="newCustomerIdentityNumber" class="inp mono" placeholder="Encrypted ID Number" style="flex:1;">
-                </div>
-              </div>
-            </div>
-
-            <!-- Face Liveness Verification Trigger -->
-            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.25); padding:10px 14px; border-radius:8px; margin-bottom:12px;">
-              <div>
-                <div style="font-size:12px; font-weight:700; color:#fff;">Face Liveness Check</div>
-                <div style="font-size:11px; color:#94a3b8;">Turn head, blink & smile verification</div>
-              </div>
-              <div>
-                <button 
-                  *ngIf="!newCustomerPhoto()" 
-                  class="btn btn-primary btn-xs" 
-                  (click)="openLivenessVerification()">
-                  📸 Start Face Check
-                </button>
-                <span *ngIf="newCustomerPhoto()" class="badge badge-active">
-                  ✅ Verified
-                </span>
-              </div>
-            </div>
-
-            <button 
-              class="btn btn-success" 
-              style="width:100%;" 
-              (click)="registerAndLinkCustomer()" 
-              [disabled]="isRegisteringCustomer || !newCustomerFirstName() || !newCustomerPhone()">
-              {{ isRegisteringCustomer ? 'Registering...' : 'Register Customer & Link to Card' }}
+          <!-- Search Lost Card -->
+          <div class="flex gap-2">
+            <input [(ngModel)]="lostCardSearchTerm" (keydown.enter)="searchLostCard()" placeholder="Enter lost card number..." class="flex-1 bg-surface-container-lowest border border-surface-container-high rounded-xl px-4 py-2.5 font-label-code-md text-caption text-on-surface">
+            <button (click)="searchLostCard()" class="px-5 py-2.5 rounded-xl bg-primary-container text-on-primary font-bold text-caption cursor-pointer">
+              Find Lost Card
             </button>
           </div>
 
-          <!-- REPLACEMENT DETAILS PANEL (Visible when customer linked) -->
-          <div *ngIf="!showRegisterCustomerForm()" class="replacement-panel" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px;">
-            <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:12px;">
-              ✨ New Replacement Card Details
-            </div>
-
-            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:12px;">
-              <div class="input-group">
-                <label>New Card Number (Auto-Generated)</label>
-                <input type="text" [(ngModel)]="replacementCardNumber" class="inp mono" style="font-weight:700;">
+          <!-- If Lost Card Found -->
+          <div *ngIf="lostCard() as lost" class="space-y-3">
+            <div class="p-3 bg-surface-container-lowest border border-surface-container-high rounded-xl flex items-center justify-between">
+              <div>
+                <span class="font-label-code-md text-caption font-bold text-on-surface">{{ lost.cardNumber }}</span>
+                <span class="font-caption text-[11px] text-on-surface-variant block">Holder: {{ lost.customerName || 'Unlinked' }}</span>
               </div>
-              <div class="input-group">
-                <label>New Card PIN</label>
-                <input type="text" [(ngModel)]="replacementPin" class="inp mono">
+              <span class="font-label-code-md text-body-md font-bold text-secondary">₦{{ lost.balance.toLocaleString() }}</span>
+            </div>
+
+            <!-- Replacement Card Details -->
+            <div class="p-3 bg-surface-container-lowest border border-surface-container-high rounded-xl space-y-2">
+              <span class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block">New Replacement Card</span>
+              <div class="flex items-center justify-between font-label-code-md text-caption">
+                <span class="text-primary font-bold">{{ replacementCardNumber() }}</span>
+                <span class="text-on-surface-variant">PIN: {{ replacementPin() }}</span>
               </div>
             </div>
 
-            <div class="input-group" style="margin-bottom:12px;">
-              <label>Lost Card Verification PIN (if known)</label>
-              <input 
-                type="password" 
-                [(ngModel)]="verificationPin" 
-                placeholder="Enter 4-digit PIN of lost card" 
-                class="inp mono" 
-                style="width:100%;">
-            </div>
-
-            <div style="margin-bottom:14px;">
-              <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#fff; cursor:pointer;">
-                <input type="checkbox" [(ngModel)]="activateReplacement" style="width:16px; height:16px; accent-color:#10b981;">
-                Activate replacement card immediately
-              </label>
-            </div>
-
-            <button 
-              class="btn btn-success" 
-              style="width:100%; padding:12px; font-size:14px;" 
-              (click)="confirmReplacement()" 
-              [disabled]="isReplacing">
-              {{ isReplacing ? 'Migrating Balance...' : 'Confirm Replacement & Migrate Balance' }}
+            <button (click)="confirmReplacement()" [disabled]="isReplacing" class="w-full py-3.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-headline-md text-caption font-bold shadow-md cursor-pointer disabled:opacity-50">
+              {{ isReplacing ? 'Migrating Balance...' : 'Confirm Balance Migration to New Card' }}
             </button>
           </div>
-
-        </div>
-
-        <div *ngIf="!lostCard() && !isSearchingLost()" class="empty-state">
-          Enter the customer's lost or misplaced card number to safely migrate remaining balance to a new card.
         </div>
       </div>
 
     </div>
 
   </div>
-</div>
 
-<!-- Interactive Face Liveness Modal Component -->
-<app-liveness-modal
-  [isOpen]="isLivenessModalOpen()"
-  [customerName]="livenessCustomerName()"
-  (close)="isLivenessModalOpen.set(false)"
-  (verified)="onLivenessVerified($event)">
-</app-liveness-modal>
+  <!-- Face Liveness Modal Overlay for customer registration -->
+  <app-liveness-modal 
+    [isOpen]="isLivenessModalOpen()" 
+    [customerName]="livenessCustomerName()" 
+    (close)="isLivenessModalOpen.set(false)" 
+    (verified)="onLivenessVerified($event)">
+  </app-liveness-modal>
+
+</div>

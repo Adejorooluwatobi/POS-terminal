@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, EventEmitter, Output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -22,10 +22,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
   toast = inject(ToastService);
   tillService = inject(TillSessionService);
   scanner = inject(ScannerService);
+  private router = inject(Router);
 
   isScannerFocused = false;
   clock = signal<string>('--:--:--');
   private clockInterval: any;
+
+  storeName = computed(() => this.auth.currentStaff()?.businessName || localStorage.getItem('store_name') || localStorage.getItem('business_name') || 'RetailOS');
+  terminalCode = computed(() => localStorage.getItem('terminal_code') || 'LG-01-T3');
+  staffName = computed(() => this.auth.currentStaff()?.name || 'Cashier');
+  staffInitials = computed(() => this.auth.currentStaff()?.initials || 'FL');
+  staffRole = computed(() => this.auth.currentStaff()?.role || 'Cashier');
+  isTillOpen = computed(() => !!this.tillService.currentSession());
 
   @Output() clickSummary = new EventEmitter<void>();
   @Output() clickCalculator = new EventEmitter<void>();
@@ -60,7 +68,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       if (val) {
         const p = await this.pos.processBarcode(val);
         if (p) {
-          this.toast.success(`${p.emoji} ${p.name}`);
+          this.toast.success(`${p.name} added to cart`);
         } else {
           this.toast.error(`No product found: ${val}`);
         }
@@ -73,10 +81,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.themeService.toggleTheme();
   }
 
-  private router = inject(Router);
-
   confirmLogout() {
-    if (confirm(`Close till and end shift for ${this.auth.currentStaff()?.name}?`)) {
+    if (confirm(`Close register and end shift for ${this.staffName()}?`)) {
       this.auth.logout();
       this.router.navigate(['/login']);
     }

@@ -1,57 +1,73 @@
-<div class="modal-overlay" (click)="cancel()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2 *ngIf="isOpening()">🚀 Open New Till Session</h2>
-      <h2 *ngIf="isClosing()">🏁 Close Till Session</h2>
-      <button class="close-btn" (click)="cancel()">&times;</button>
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-container-lowest/80 backdrop-blur-xl animate-fade-in select-none overflow-y-auto" (click)="cancel()">
+  <div class="w-full max-w-md bg-surface-container-low border border-surface-container-high rounded-2xl shadow-2xl overflow-y-auto max-h-[90vh] relative my-auto" (click)="$event.stopPropagation()">
+    
+    <div class="p-4 bg-surface-container border-b border-surface-container-high flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-[20px]" style="width:20px;height:20px;">
+          {{ isOpening() ? 'lock_open' : 'lock' }}
+        </span>
+        <h2 class="font-headline-md text-caption font-bold text-on-surface uppercase tracking-wider">
+          {{ isOpening() ? 'Open New Till Session' : 'Close Active Till Session' }}
+        </h2>
+      </div>
+      <button class="w-7 h-7 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface cursor-pointer" (click)="cancel()">
+        <span class="material-symbols-outlined text-[16px]" style="width:16px;height:16px;">close</span>
+      </button>
     </div>
 
-    <div class="modal-body">
+    <div class="p-5 space-y-4">
       <!-- Opening Form -->
-      <div *ngIf="isOpening()" class="form-group">
-        <label for="openingFloat">Opening Float (Cash in Drawer)</label>
-        <div class="input-wrapper">
-          <span class="currency">₦</span>
-          <input type="number" id="openingFloat" [(ngModel)]="openingFloat" placeholder="0.00" autoFocus>
+      <div *ngIf="isOpening()" class="space-y-2">
+        <label class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block">Opening Float (Cash in Drawer)</label>
+        <div class="relative flex items-center bg-surface-container-lowest border border-surface-container-high rounded-xl px-3.5 py-2.5 focus-within:border-secondary transition-all">
+          <span class="font-label-code-md text-body-lg text-secondary font-bold mr-2">₦</span>
+          <input type="number" id="openingFloat" [(ngModel)]="openingFloat" (keydown.enter)="openTill()" placeholder="0.00" class="w-full bg-transparent font-label-code-md text-headline-md text-on-surface font-bold focus:outline-none" autofocus>
         </div>
-        <p class="help-text">Enter the initial cash amount available in the till.</p>
+        <p class="font-caption text-[11px] text-on-surface-variant">Enter initial physical cash count in drawer.</p>
       </div>
 
       <!-- Closing Form -->
-      <div *ngIf="isClosing()" class="form-group">
-        <label for="closingCash">Closing Cash (Actual Count)</label>
-        <div class="input-wrapper">
-          <span class="currency">₦</span>
-          <input type="number" id="closingCash" [(ngModel)]="closingCash" placeholder="0.00" autoFocus>
+      <div *ngIf="isClosing()" class="space-y-3">
+        <div>
+          <label class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Closing Cash (Actual Drawer Count)</label>
+          <div class="relative flex items-center bg-surface-container-lowest border border-surface-container-high rounded-xl px-3.5 py-2.5 focus-within:border-primary transition-all">
+            <span class="font-label-code-md text-body-lg text-primary font-bold mr-2">₦</span>
+            <input type="number" id="closingCash" [(ngModel)]="closingCash" (keydown.enter)="closeTill()" placeholder="0.00" class="w-full bg-transparent font-label-code-md text-headline-md text-on-surface font-bold focus:outline-none" autofocus>
+          </div>
+          <p class="font-caption text-[11px] text-on-surface-variant mt-1">Count all physical currency in the cash drawer before sealing.</p>
         </div>
-        <p class="help-text">Count all cash in the drawer and enter the total.</p>
         
-        <div class="session-summary" *ngIf="session()">
-          <div class="summary-item">
-            <span>Opened At:</span>
-            <span>{{ session()?.openedAt | date:'short' }}</span>
+        <div class="p-3 bg-surface-container border border-surface-container-high rounded-xl space-y-1.5 font-label-code-md text-caption" *ngIf="session()">
+          <div class="flex justify-between text-on-surface-variant">
+            <span>Session Started:</span>
+            <span class="text-on-surface font-semibold">{{ session()?.openedAt | date:'short' }}</span>
           </div>
-          <div class="summary-item">
+          <div class="flex justify-between text-on-surface-variant">
             <span>Opening Float:</span>
-            <span>₦{{ session()?.openingFloat | number:'1.2-2' }}</span>
+            <span class="text-secondary font-bold">₦{{ session()?.openingFloat | number:'1.2-2' }}</span>
           </div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="notes">Notes (Optional)</label>
-        <textarea id="notes" [(ngModel)]="notes" placeholder="Any discrepancies or remarks..."></textarea>
+      <!-- Notes Field -->
+      <div>
+        <label class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Supervisor Notes (Optional)</label>
+        <textarea id="notes" [(ngModel)]="notes" placeholder="Remarks or float discrepancy notes..." rows="2" class="w-full bg-surface-container-lowest border border-surface-container-high rounded-xl p-3 font-body-md text-caption text-on-surface focus:outline-none focus:border-primary resize-none"></textarea>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-container-high">
+        <button (click)="cancel()" class="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-body-md text-caption font-semibold cursor-pointer">
+          Cancel
+        </button>
+        <button *ngIf="isOpening()" (click)="openTill()" class="px-5 py-2.5 rounded-xl bg-secondary hover:bg-secondary-container text-on-secondary font-headline-md text-caption font-bold shadow-md cursor-pointer transition-all">
+          Confirm & Open Till
+        </button>
+        <button *ngIf="isClosing()" (click)="closeTill()" class="px-5 py-2.5 rounded-xl bg-error hover:bg-error-container text-on-error font-headline-md text-caption font-bold shadow-md cursor-pointer transition-all">
+          Finalize & Close Till
+        </button>
       </div>
     </div>
 
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="cancel()">Cancel</button>
-      <button *ngIf="isOpening()" class="btn-primary" (click)="openTill()">
-        Confirm & Open Till
-      </button>
-      <button *ngIf="isClosing()" class="btn-danger" (click)="closeTill()">
-        Finalize & Close Till
-      </button>
-    </div>
   </div>
 </div>

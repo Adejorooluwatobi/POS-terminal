@@ -1,72 +1,87 @@
-<div style="background:var(--surface);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
-  <!-- Left: branding -->
-  <div style="display:flex;align-items:center;gap:8px;">
-    <span class="mono" style="font-size:11px;font-weight:700;color:var(--accent);">{{ (auth.currentStaff()?.businessName || 'RETAILOS') | uppercase }}</span>
-    <span style="color:var(--border2);">|</span>
-    <span class="mono" style="font-size:10px;color:var(--text3);">LG-01-T3</span>
-    <span class="tag tag-green">ONLINE</span>
-  </div>
-
-  <!-- Center: scanner bar -->
-  <div style="flex:1;max-width:340px;margin:0 auto;">
-    <div class="scanner-bar" [class.active]="isScannerFocused" [class.scanning]="scanner.isScanning()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;">
-        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="3" x2="8" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="16" y1="3" x2="16" y2="21"/>
-      </svg>
-      <input 
-        #scannerInput
-        class="mono"
-        style="background:none;border:none;outline:none;color:var(--text);font-size:11px;width:100%;"
-        placeholder="Scan barcode or type SKU — press Enter"
-        (keydown)="handleScannerKey($event)"
-        (focus)="isScannerFocused = true"
-        (blur)="isScannerFocused = false"
-      >
-      <span class="scanner-cursor" *ngIf="false"></span>
-    </div>
-  </div>
-
-  <!-- Right: info + controls -->
-  <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
-    <div class="mono" style="font-size:10px;color:var(--text3);">{{ clock() }}</div>
-    
-    <!-- Staff Badge -->
-    <div *ngIf="auth.currentStaff() as staff" style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 9px;">
-      <div [style.background]="staff.color + '22'" [style.border-color]="staff.color + '66'" [style.color]="staff.color"
-           style="width:22px;height:22px;border-radius:50%;border:1px solid;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold;">
-        {{ staff.initials }}
+<header class="w-full bg-surface-container-lowest/95 backdrop-blur-xl border-b border-surface-container-high px-4 py-1.5 flex items-center justify-between gap-3 z-40 select-none shadow-sm">
+  
+  <!-- Left: Branding & Terminal Readiness -->
+  <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-primary via-primary-container to-secondary flex items-center justify-center shadow-[0_0_12px_rgba(76,215,246,0.25)] shrink-0">
+        <span class="material-symbols-outlined text-surface-container-lowest font-semibold text-[16px]" style="width:16px;height:16px;">point_of_sale</span>
       </div>
-      <span style="font-size:11px;font-weight:600;">{{ staff.name.split(' ')[0] }}</span>
-      <span style="font-size:10px;color:var(--text3);">· {{ staff.role }}</span>
+      <div class="flex flex-col">
+        <div class="flex items-center gap-1.5">
+          <span class="font-headline-md text-caption text-on-surface font-medium tracking-tight">{{ storeName() }}</span>
+          <span class="px-1.5 py-0.2 rounded-full bg-secondary/15 text-secondary text-[10px] font-label-code-md font-medium tracking-wider">{{ terminalCode() }}</span>
+        </div>
+        <span class="text-[10px] font-label-code-md text-on-surface-variant flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+          ONLINE • READY
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center / Action Shortcuts -->
+  <div class="hidden lg:flex items-center gap-0.5 bg-surface-container-low/80 p-0.5 rounded-lg border border-surface-container-high/60 shadow-inner">
+    <button (click)="openSessionSummary()" class="px-2.5 py-1 rounded-md text-on-surface-variant hover:text-on-surface font-body-md text-[10px] uppercase tracking-wider font-medium transition-all hover:bg-surface-container cursor-pointer flex items-center gap-1">
+      <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">analytics</span>
+      <span>Summary</span>
+    </button>
+    <button (click)="clickTill.emit()" class="px-2.5 py-1 rounded-md text-on-surface-variant hover:text-on-surface font-body-md text-[10px] uppercase tracking-wider font-medium transition-all hover:bg-surface-container cursor-pointer flex items-center gap-1">
+      <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">lock_open</span>
+      <span>Till Control</span>
+    </button>
+    <button (click)="clickGiftCard.emit()" class="px-2.5 py-1 rounded-md text-primary hover:text-primary-container font-body-md text-[10px] uppercase tracking-wider font-medium transition-all hover:bg-surface-container cursor-pointer flex items-center gap-1">
+      <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">contactless</span>
+      <span>Card Center</span>
+    </button>
+    <button (click)="clickHistory.emit()" class="px-2.5 py-1 rounded-md text-on-surface-variant hover:text-on-surface font-body-md text-[10px] uppercase tracking-wider font-medium transition-all hover:bg-surface-container cursor-pointer flex items-center gap-1">
+      <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">history</span>
+      <span>History</span>
+    </button>
+    <button (click)="clickCalculator.emit()" class="px-2 py-1 rounded-md text-on-surface-variant hover:text-on-surface font-body-md text-[10px] transition-all hover:bg-surface-container cursor-pointer flex items-center" title="Calculator">
+      <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">calculate</span>
+    </button>
+  </div>
+
+  <!-- Right: Operational Badges, Clock & Cashier -->
+  <div class="flex items-center gap-2">
+    <!-- Till Status Chip -->
+    <button (click)="clickTill.emit()" 
+            class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-label-code-md font-medium cursor-pointer border transition-colors"
+            [class.bg-secondary-container/20]="isTillOpen()"
+            [class.text-secondary]="isTillOpen()"
+            [class.border-secondary/30]="isTillOpen()"
+            [class.bg-surface-container]="!isTillOpen()"
+            [class.text-outline]="!isTillOpen()"
+            [class.border-surface-container-high]="!isTillOpen()">
+      <span class="w-1.5 h-1.5 rounded-full" [class.bg-secondary]="isTillOpen()" [class.bg-outline]="!isTillOpen()"></span>
+      <span>Till: {{ isTillOpen() ? 'Open' : 'Closed' }}</span>
+    </button>
+
+    <!-- Digital Monospaced Clock -->
+    <div class="font-label-code-md text-[10px] font-medium text-primary tracking-wider bg-surface-container border border-surface-container-high px-2 py-0.5 rounded-md">
+      {{ clock() }}
     </div>
 
-    <button (click)="clickTill.emit()" class="btn btn-ghost btn-xs" [class.btn-success]="tillService.currentSession()">
-      <span class="status-dot" *ngIf="tillService.currentSession()"></span>
-      Till: {{ tillService.currentSession() ? 'Open' : 'Closed' }}
-    </button>
-    <button (click)="openSessionSummary()" class="btn btn-ghost btn-xs">Summary</button>
-    <button (click)="clickHistory.emit()" class="btn btn-ghost btn-xs">History</button>
-    <button (click)="clickGiftCard.emit()" class="btn btn-ghost btn-xs">Gift Card</button>
-    <button (click)="clickCalculator.emit()" class="btn btn-ghost btn-xs" title="Calculator">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <rect x="4" y="2" width="16" height="20" rx="2"/>
-        <line x1="8" y1="6" x2="16" y2="6"/>
-        <line x1="8" y1="10" x2="8" y2="10"/>
-        <line x1="12" y1="10" x2="12" y2="10"/>
-        <line x1="16" y1="10" x2="16" y2="10"/>
-        <line x1="8" y1="14" x2="8" y2="14"/>
-        <line x1="12" y1="14" x2="12" y2="14"/>
-        <line x1="16" y1="14" x2="16" y2="14"/>
-        <line x1="8" y1="18" x2="8" y2="18"/>
-        <line x1="12" y1="18" x2="12" y2="18"/>
-        <line x1="16" y1="18" x2="16" y2="18"/>
-      </svg>
-    </button>
-    
-    <div class="theme-toggle" (click)="toggleTheme()" style="flex-shrink:0;">
-      <div class="knob"></div>
+    <!-- Cashier Profile Pill -->
+    <div class="flex items-center gap-1.5 bg-surface-container-low border border-surface-container-high px-2 py-0.5 rounded-lg">
+      <div class="w-6 h-6 rounded-md bg-primary-container/30 text-primary flex items-center justify-center font-semibold text-[10px]">
+        {{ staffInitials() }}
+      </div>
+      <div class="flex flex-col text-left">
+        <span class="text-[11px] font-medium leading-tight text-on-surface">{{ staffName() }}</span>
+        <span class="text-[9px] font-caption text-on-surface-variant uppercase tracking-wider leading-none">{{ staffRole() }}</span>
+      </div>
     </div>
-    
-    <button (click)="confirmLogout()" class="btn btn-danger btn-xs">End Shift</button>
+
+    <!-- Theme Toggle -->
+    <button (click)="toggleTheme()" class="w-7 h-7 rounded-lg bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors cursor-pointer border border-surface-container-high" title="Toggle Theme">
+      <span class="material-symbols-outlined text-[15px]" style="width:15px;height:15px;">dark_mode</span>
+    </button>
+
+    <!-- End Shift CTA -->
+    <button (click)="confirmLogout()" class="px-2 py-0.5 rounded-md bg-error-container/30 hover:bg-error-container text-error text-[10px] font-body-md font-medium transition-colors cursor-pointer border border-error/30" title="End Shift & Sign Out">
+      End Shift
+    </button>
   </div>
-</div>
+
+</header>

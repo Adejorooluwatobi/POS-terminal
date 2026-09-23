@@ -1,6 +1,7 @@
 import { Component, inject, Output, EventEmitter, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { POSService } from '../../services/pos.service';
+import { TillSessionService } from '../../services/till-session.service';
 
 @Component({
   selector: 'app-numpad',
@@ -10,6 +11,7 @@ import { POSService } from '../../services/pos.service';
 })
 export class Numpad {
   pos = inject(POSService);
+  tillService = inject(TillSessionService);
 
   @Output() clickDiscount = new EventEmitter<void>();
   @Output() clickPromo = new EventEmitter<void>();
@@ -25,8 +27,20 @@ export class Numpad {
     return cart.length > 0 ? cart[cart.length - 1] : null;
   });
 
+  tillBadge = computed(() => {
+    const s = this.tillService.currentSession();
+    return s ? 'TILL ACTIVE' : 'TILL STANDBY';
+  });
+
+  formattedShiftVolume = computed(() => {
+    const rev = this.pos.sessionRevenue();
+    if (rev >= 1_000_000) return `₦${(rev / 1_000_000).toFixed(1)}M`;
+    if (rev >= 1_000) return `₦${(rev / 1_000).toFixed(0)}K`;
+    return `₦${rev}`;
+  });
+
   onKeyClick(d: string) {
-    this.pos.numBuffer.update(prev => (prev + d).slice(0, 6));
+    this.pos.numBuffer.update(prev => (prev + d).slice(0, 8));
   }
 
   onClear() {
@@ -35,12 +49,6 @@ export class Numpad {
 
   onBackspace() {
     this.pos.numBuffer.update(prev => prev.slice(0, -1));
-  }
-
-  onBufferInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const clean = input.value.replace(/[^0-9]/g, '').slice(0, 6);
-    this.pos.numBuffer.set(clean);
   }
 
   onApplyQty() {
@@ -61,6 +69,10 @@ export class Numpad {
 
   onPromoCode() {
     this.clickPromo.emit();
+  }
+
+  onHold() {
+    this.pos.holdTransaction();
   }
 
   onRemoveItem() {

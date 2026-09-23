@@ -1,37 +1,47 @@
-<div class="modal-overlay" *ngIf="isOpen" (click)="closeModal()">
-  <div class="modal-container" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <div class="header-title">
-        <span class="icon">🏷️</span>
-        Promo Code
+<div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-container-lowest/80 backdrop-blur-xl animate-fade-in select-none">
+  <div class="w-full max-w-sm bg-surface-container-low border border-surface-container-high rounded-2xl shadow-2xl overflow-hidden relative">
+    <div class="p-4 bg-surface-container border-b border-surface-container-high flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-tertiary text-[20px]" style="width:20px;height:20px;">loyalty</span>
+        <span class="font-headline-md text-caption font-bold text-on-surface uppercase tracking-wider">Promotional Campaign Code</span>
       </div>
-      <button class="close-btn" (click)="closeModal()">&times;</button>
-    </div>
-
-    <div class="modal-body">
-      <div class="input-group">
-        <label>Enter Code</label>
-        <input 
-          type="text" 
-          [(ngModel)]="promoCode" 
-          placeholder="e.g. SUMMER2024"
-          class="promo-input"
-          [disabled]="isValidating()">
-      </div>
-
-      <div class="info-box">
-        Global and store-specific codes are accepted.
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-      <button 
-        class="btn btn-primary" 
-        (click)="onApply()" 
-        [disabled]="!promoCode() || isValidating()">
-        {{ isValidating() ? 'Validating...' : 'Apply Code' }}
+      <button (click)="closeModal()" class="w-7 h-7 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface cursor-pointer">
+        <span class="material-symbols-outlined text-[16px]" style="width:16px;height:16px;">close</span>
       </button>
+    </div>
+
+    <div class="p-5 space-y-4">
+      <div>
+        <label class="font-caption text-[10px] text-outline font-bold uppercase tracking-wider block mb-1">Coupon / Campaign Code</label>
+        <div class="relative">
+          <input 
+            type="text" 
+            [(ngModel)]="promoCode" 
+            (keydown.enter)="onApply()"
+            placeholder="e.g. SAVE10 or PROMO500"
+            class="w-full bg-surface-container-lowest border border-surface-container-high rounded-xl px-3.5 py-2.5 font-label-code-md text-body-md text-primary font-bold uppercase tracking-wider focus:outline-none focus:border-primary"
+            [disabled]="isValidating()"
+            autofocus>
+        </div>
+      </div>
+
+      <div class="p-3 bg-surface-container rounded-xl text-[11px] font-caption text-on-surface-variant flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-[16px]" style="width:16px;height:16px;">info</span>
+        <span>Validates automatically against cloud merchant promotion rules.</span>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-1">
+        <button (click)="closeModal()" class="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-body-md text-caption font-semibold cursor-pointer">
+          Cancel
+        </button>
+        <button 
+          (click)="onApply()" 
+          [disabled]="!promoCode() || isValidating()"
+          class="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-headline-md text-caption font-bold shadow-md cursor-pointer disabled:opacity-50 flex items-center gap-1.5">
+          <span *ngIf="isValidating()" class="material-symbols-outlined text-[16px] animate-spin" style="width:16px;height:16px;">sync</span>
+          <span>{{ isValidating() ? 'Verifying Code...' : 'Apply Promotion' }}</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>

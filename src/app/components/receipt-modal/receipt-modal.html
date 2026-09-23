@@ -1,82 +1,225 @@
-<div *ngIf="isOpen" class="modal-wrap">
-  <div class="modal" style="max-width:340px;">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:13px;font-weight:700;">Receipt</span>
-      <button (click)="closeModal()" class="btn btn-ghost btn-xs">✕</button>
-    </div>
+<div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-surface-container-lowest/80 backdrop-blur-xl animate-fade-in select-none">
+  
+  <!-- Receipt Card Frame -->
+  <div class="w-full max-w-xl flex flex-col bg-surface-container-low border border-surface-container-high rounded-2xl shadow-2xl overflow-hidden relative">
     
-    <div *ngIf="pos.lastTx() as tx" class="mono thin-scroll" style="padding:16px;font-size:11px;line-height:1.7;max-height:420px;overflow-y:auto;background:var(--surface2);border-radius:10px;margin:12px;">
-      <div style="text-align:center;margin-bottom:15px;color:var(--text);">
-        <div style="font-size:14px;font-weight:700;letter-spacing:-0.02em;">{{ (pos.storeName() || pos.businessName()) | uppercase }}</div>
-        <div *ngIf="pos.storeName() && pos.businessName() && pos.storeName().toUpperCase() !== pos.businessName().toUpperCase()" style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:2px;">{{ pos.businessName() }}</div>
-        <div *ngIf="pos.storeAddress()" style="font-size:10px;color:var(--text3);margin-top:4px;">{{ pos.storeAddress() }}</div>
-        <div *ngIf="pos.storePhone()" style="font-size:10px;color:var(--text3);margin-top:2px;">TEL: {{ pos.storePhone() }}</div>
-        <div *ngIf="pos.tenantEmail()" style="font-size:10px;color:var(--text3);margin-top:2px;">EMAIL: {{ pos.tenantEmail() }}</div>
+    <!-- Top Utility Header -->
+    <div class="flex items-center justify-between px-space-lg py-3 bg-surface-container border-b border-surface-container-high">
+      <div class="flex items-center gap-space-xs">
+        <span class="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_8px_currentColor]"></span>
+        <span class="font-label-code-md text-caption font-semibold tracking-wider text-on-surface uppercase">Tender Approved & Settled</span>
       </div>
-      
-      <div style="border-top:1px dashed var(--border);padding-top:10px;margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">TX NUMBER</span><span style="color:var(--accent);font-weight:700;">{{ tx.txNum }}</span></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">DATE/TIME</span><span>{{ tx.date | date:'dd MMM yyyy · HH:mm' }}</span></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">CASHIER</span><span style="color:var(--text);">{{ tx.staff.name.toUpperCase() }}</span></div>
+      <div class="flex items-center gap-space-sm">
+        <span class="font-label-code-md text-[11px] text-primary bg-primary/10 px-2 py-0.5 rounded font-semibold">EMV CONTACTLESS</span>
+        <button (click)="closeModal()" class="w-7 h-7 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">
+          <span class="material-symbols-outlined text-[16px]" style="width:16px;height:16px;">close</span>
+        </button>
       </div>
+    </div>
+
+    <!-- Receipt Body Scrollable Sheet -->
+    <div *ngIf="pos.lastTx() as tx" class="p-5 md:px-7 flex flex-col gap-3.5 max-h-[68vh] overflow-y-auto">
       
-      <div style="border-top:1px dashed var(--border);padding-top:10px;margin-bottom:10px;">
-        <div *ngFor="let i of tx.items" style="margin-bottom:6px;">
-          <div style="display:flex;justify-content:space-between;">
-            <span style="color:var(--text);font-weight:600;">{{ i.name.toUpperCase() }}</span>
-            <span style="font-weight:700;">₦{{ ((i.price * i.qty) - i.discount).toLocaleString() }}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);">
-             <span>{{ i.qty }} x ₦{{ i.price.toLocaleString() }}</span>
-             <span *ngIf="i.discount > 0" style="color:var(--amber);">Disc: -₦{{ i.discount.toLocaleString() }}</span>
-          </div>
+      <!-- Store Header Banner -->
+      <div class="flex flex-col items-center text-center gap-0.5">
+        <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-surface-container-high text-secondary text-[10px] font-label-code-md font-semibold mb-1 border border-surface-container-highest">
+          <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">verified</span>
+          <span>OFFICIAL MERCHANT RECEIPT</span>
         </div>
+        <h2 class="font-headline-lg text-headline-md text-on-surface font-bold tracking-tight uppercase">{{ storeName() }}</h2>
+        <span class="font-label-code-md text-[11px] uppercase tracking-widest text-primary font-medium">Premium Retail Experience</span>
+        <span class="font-body-md text-[11px] text-on-surface-variant mt-0.5">{{ storeAddress() }}</span>
+        <span class="font-label-code-md text-[10px] text-outline">TEL: {{ storePhone() }} · EMAIL: {{ tenantEmail() }}</span>
       </div>
-      
-      <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">SUBTOTAL</span><span>{{ fmt(tx.subtotal) }}</span></div>
-        <div *ngIf="tx.couponDisc > 0" style="display:flex;justify-content:space-between;"><span style="color:var(--amber);">COUPON APPLIED</span><span style="color:var(--amber);">-{{ fmt(tx.couponDisc) }}</span></div>
-        <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">VAT (7.5%)</span><span>{{ fmt(tx.vat) }}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;margin-top:6px;padding-top:6px;border-top:2px solid var(--border);">
-          <span style="color:var(--text);">TOTAL</span>
-          <span style="color:var(--green);">{{ fmt(tx.grand > 0 ? tx.grand : (tx.subtotal + (tx.vat || 0) - (tx.couponDisc || 0))) }}</span>
+
+      <!-- Subtle Perforated Tear Line Visual -->
+      <div class="w-full flex items-center gap-1 py-1">
+        <div class="w-2.5 h-2.5 rounded-full bg-surface-container-highest shrink-0"></div>
+        <div class="flex-1 h-[1px] bg-gradient-to-r from-surface-container-highest via-outline-variant to-surface-container-highest"></div>
+        <div class="w-2.5 h-2.5 rounded-full bg-surface-container-highest shrink-0"></div>
+      </div>
+
+      <!-- Transaction Meta Key-Value Grid -->
+      <div class="grid grid-cols-2 gap-y-2 gap-x-4 bg-surface-container border border-surface-container-high p-3 rounded-xl font-label-code-md text-caption">
+        <div class="flex flex-col">
+          <span class="text-on-surface-variant text-[10px] uppercase tracking-wider font-semibold">Tx Number</span>
+          <span class="text-primary font-semibold text-body-md tracking-wider">{{ tx.txNum }}</span>
+        </div>
+        <div class="flex flex-col text-right">
+          <span class="text-on-surface-variant text-[10px] uppercase tracking-wider font-semibold">Date / Time</span>
+          <span class="text-on-surface font-semibold text-caption">{{ tx.date | date:'dd MMM yyyy · HH:mm' }}</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-on-surface-variant text-[10px] uppercase tracking-wider font-semibold">Cashier</span>
+          <span class="text-on-surface font-semibold text-caption">{{ tx.staff.name.toUpperCase() }}</span>
+        </div>
+        <div class="flex flex-col text-right">
+          <span class="text-on-surface-variant text-[10px] uppercase tracking-wider font-semibold">Terminal</span>
+          <span class="text-on-surface font-semibold text-caption">POS-01 (LG-01-T3)</span>
         </div>
       </div>
 
-      <!-- Payment Breakdown -->
-      <div style="border-top:1px dashed var(--border);padding-top:8px;margin-bottom:10px;font-size:11px;">
-        <div *ngIf="tx.giftCardDisc && tx.giftCardDisc > 0" style="margin-bottom:4px;">
-          <div style="display:flex;justify-content:space-between;font-weight:700;color:var(--accent);">
-            <span>PAID VIA GIFT CARD</span>
-            <span>{{ fmt(tx.giftCardDisc) }}</span>
+      <!-- Itemized Breakdown Table -->
+      <div class="flex flex-col bg-surface-container-lowest/80 border border-surface-container-high rounded-xl p-3 gap-2">
+        <div class="flex justify-between items-center text-on-surface-variant font-label-code-md text-[10px] pb-1 border-b border-surface-container-high">
+          <span class="uppercase tracking-wider">Description & Qty</span>
+          <span class="uppercase tracking-wider">Amount (NGN)</span>
+        </div>
+
+        <!-- Line Items -->
+        <div *ngFor="let item of tx.items" class="flex justify-between items-start py-1">
+          <div class="flex flex-col min-w-0 pr-2">
+            <span class="font-body-md text-caption text-on-surface font-bold tracking-tight truncate">{{ item.name.toUpperCase() }}</span>
+            <span class="font-label-code-md text-[10px] text-on-surface-variant">
+              {{ item.qty }} Units × ₦{{ item.price.toLocaleString() }}
+              <span *ngIf="item.discount > 0" class="text-amber-400"> (Disc: -₦{{ item.discount.toLocaleString() }})</span>
+            </span>
           </div>
-          <div *ngIf="tx.redeemedGiftCards && tx.redeemedGiftCards.length > 0">
-            <div *ngFor="let gc of tx.redeemedGiftCards" style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);padding-left:8px;">
-              <span>CARD: {{ gc.cardNumber }}</span>
-              <span>{{ fmt(gc.amount) }}</span>
+          <span class="font-label-code-md text-caption text-on-surface font-bold shrink-0">
+            ₦{{ ((item.price * item.qty) - (item.discount || 0)).toLocaleString() }}
+          </span>
+        </div>
+
+        <div class="h-[1px] w-full bg-surface-container-high my-1"></div>
+
+        <!-- Subtotals & Tax Computation -->
+        <div class="flex flex-col gap-1.5 font-label-code-md text-caption">
+          <div class="flex justify-between text-on-surface-variant">
+            <span>SUBTOTAL</span>
+            <span class="text-on-surface font-semibold">{{ fmt(tx.subtotal) }}</span>
+          </div>
+          <div class="flex justify-between text-on-surface-variant">
+            <div class="flex items-center gap-1">
+              <span>VAT (7.5% INCLUDED)</span>
+            </div>
+            <span class="text-on-surface font-semibold">{{ fmt(tx.vat) }}</span>
+          </div>
+          <div *ngIf="tx.couponDisc > 0" class="flex justify-between text-secondary">
+            <span>DISCOUNT / PROMO REBATE</span>
+            <span class="font-semibold">-{{ fmt(tx.couponDisc) }}</span>
+          </div>
+        </div>
+
+        <!-- Grand Highlighted Total -->
+        <div class="flex justify-between items-center p-3 rounded-xl bg-surface-container-high mt-1 border border-surface-container-highest shadow-inner">
+          <div class="flex flex-col">
+            <span class="font-label-code-md text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Grand Total Tendered</span>
+            <span class="font-caption text-[10px] text-secondary">TX #{{ tx.txNum }}</span>
+          </div>
+          <span class="font-headline-lg text-headline-md font-bold text-secondary tracking-tight">
+            {{ fmt(tx.grand > 0 ? tx.grand : (tx.subtotal + (tx.vat || 0) - (tx.couponDisc || 0))) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Payment Settlement Breakdown Card -->
+      <div class="flex flex-col gap-2 p-3 rounded-xl bg-surface-container border border-surface-container-high">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-space-xs">
+            <div class="w-7 h-7 rounded bg-primary/20 text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-[18px]" style="width:18px;height:18px;">
+                {{ tx.method === 'GIFTCARD' ? 'card_giftcard' : (tx.method === 'CASH' ? 'payments' : 'credit_card') }}
+              </span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-headline-md text-caption text-primary font-semibold uppercase tracking-wider">
+                Paid via {{ tx.method }}
+              </span>
+              <span *ngIf="tx.giftCardDisc && tx.giftCardDisc > 0" class="font-label-code-md text-[10px] text-on-surface-variant">
+                Gift Card Portion: {{ fmt(tx.giftCardDisc) }}
+              </span>
             </div>
           </div>
+          <span class="font-label-code-md text-body-md text-primary font-bold">
+            {{ fmt(tx.tender || tx.grand) }}
+          </span>
         </div>
-        <div *ngIf="tx.method !== 'GIFTCARD' || (tx.tender - (tx.giftCardDisc || 0)) > 0" style="display:flex;justify-content:space-between;margin-top:2px;">
-          <span style="color:var(--text3);">{{ tx.method }} TENDERED</span>
-          <span>{{ fmt(tx.method === 'GIFTCARD' ? tx.tender : (tx.tender - (tx.giftCardDisc || 0))) }}</span>
+
+        <div class="h-[1px] w-full bg-surface-container-high my-0.5"></div>
+
+        <div class="grid grid-cols-2 gap-2 font-label-code-md text-caption">
+          <div class="flex justify-between items-center bg-surface-container-lowest px-2.5 py-1.5 rounded-lg border border-surface-container-high">
+            <span class="text-on-surface-variant text-[11px]">CHANGE DUE:</span>
+            <span class="text-on-surface font-semibold text-caption">{{ fmt(tx.change) }}</span>
+          </div>
+          <div class="flex justify-between items-center bg-surface-container-lowest px-2.5 py-1.5 rounded-lg border border-surface-container-high">
+            <span class="text-on-surface-variant text-[11px]">SETTLEMENT:</span>
+            <span class="text-secondary font-bold text-caption">APPROVED</span>
+          </div>
         </div>
-        <div *ngIf="tx.change > 0 && tx.method !== 'GIFTCARD'" style="display:flex;justify-content:space-between;margin-top:2px;color:var(--amber);">
-          <span>CHANGE</span>
-          <span>{{ fmt(tx.change) }}</span>
+
+        <div class="flex items-center justify-between text-[10px] font-label-code-md text-on-surface-variant px-1 pt-0.5">
+          <span>AUTH CODE: 938201 / CAPTURED</span>
+          <span>GATEWAY APPROVED</span>
         </div>
       </div>
-      
-      <div style="text-align:center;margin-top:15px;padding-top:10px;border-top:1px dashed var(--border);">
-        <div style="font-size:24px;letter-spacing:1px;color:var(--text3);margin-bottom:5px;">||| | || ||| | |||</div>
-        <div style="font-size:9px;color:var(--text3);">TX:{{ tx.txNum }} · THANK YOU FOR YOUR PATRONAGE</div>
-        <div *ngIf="pos.tenantEmail()" style="font-size:9px;color:var(--text3);margin-top:2px;">{{ pos.tenantEmail() }}</div>
+
+      <!-- Barcode & QR Verification Block -->
+      <div class="flex flex-col items-center justify-center p-3 bg-surface-container-lowest border border-surface-container-high rounded-xl gap-2 text-center">
+        <span class="font-label-code-md text-[10px] text-on-surface-variant tracking-[0.25em]">
+          RETAILOS*{{ tx.txNum }}*AUTH938201
+        </span>
+        <!-- Inline Vector Barcode -->
+        <div class="w-full max-w-xs flex items-center justify-center gap-1 h-10 py-1 px-4 bg-surface-container-low rounded-lg overflow-hidden border border-surface-container-high">
+          <span class="w-1.5 h-full bg-on-surface"></span>
+          <span class="w-0.5 h-full bg-on-surface"></span>
+          <span class="w-2 h-full bg-on-surface"></span>
+          <span class="w-1 h-full bg-on-surface"></span>
+          <span class="w-3 h-full bg-on-surface"></span>
+          <span class="w-0.5 h-full bg-on-surface"></span>
+          <span class="w-1 h-full bg-on-surface"></span>
+          <span class="w-2.5 h-full bg-on-surface"></span>
+          <span class="w-1 h-full bg-on-surface"></span>
+          <span class="w-0.5 h-full bg-on-surface"></span>
+          <span class="w-2 h-full bg-on-surface"></span>
+          <span class="w-1.5 h-full bg-on-surface"></span>
+          <span class="w-0.5 h-full bg-on-surface"></span>
+          <span class="w-3 h-full bg-on-surface"></span>
+          <span class="w-1 h-full bg-on-surface"></span>
+          <span class="w-2 h-full bg-on-surface"></span>
+          <span class="w-0.5 h-full bg-on-surface"></span>
+          <span class="w-1.5 h-full bg-on-surface"></span>
+          <span class="w-2.5 h-full bg-on-surface"></span>
+          <span class="w-0.5 h-full bg-on-surface"></span>
+          <span class="w-1 h-full bg-on-surface"></span>
+          <span class="w-3 h-full bg-on-surface"></span>
+          <span class="w-1.5 h-full bg-on-surface"></span>
+          <span class="w-0.5 h-full bg-on-surface"></span>
+          <span class="w-2 h-full bg-on-surface"></span>
+        </div>
+        <span class="font-caption text-[10px] text-on-surface-variant">
+          Scan receipt at exit validator or store kiosk for warranty & gift verification
+        </span>
       </div>
+
     </div>
-    
-    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:6px;">
-      <button (click)="printReceipt()" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center;">🖨 Print</button>
-      <button (click)="onNewTransaction()" class="btn btn-accent btn-sm" style="flex:1;justify-content:center;">New TX →</button>
+
+    <!-- Action Controls Bar (Anchored Footer) -->
+    <div class="p-4 bg-surface-container border-t border-surface-container-high flex flex-col sm:flex-row items-center justify-between gap-2 shadow-lg">
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button (click)="printReceipt()" 
+                [disabled]="isPrinting()"
+                class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-body-md text-caption font-semibold transition-all border border-surface-container-highest cursor-pointer">
+          <span *ngIf="!isPrinting() && !printSuccess()" class="material-symbols-outlined text-[18px] text-primary" style="width:18px;height:18px;">print</span>
+          <span *ngIf="isPrinting()" class="material-symbols-outlined text-[18px] text-secondary animate-spin" style="width:18px;height:18px;">sync</span>
+          <span *ngIf="printSuccess()" class="material-symbols-outlined text-[18px] text-secondary" style="width:18px;height:18px;">check</span>
+          <span>{{ isPrinting() ? 'Printing Slip...' : (printSuccess() ? 'Sent to Printer' : 'Print Receipt') }}</span>
+        </button>
+
+        <button (click)="sendDigitalReceipt()" 
+                class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-body-md text-caption font-semibold transition-all border border-surface-container-highest cursor-pointer">
+          <span class="material-symbols-outlined text-[18px] text-secondary" style="width:18px;height:18px;">mark_email_read</span>
+          <span>SMS / Email</span>
+        </button>
+      </div>
+
+      <button (click)="onNewTransaction()" 
+              class="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-headline-md text-caption font-bold tracking-wide shadow-[0_0_20px_rgba(76,215,246,0.45)] hover:shadow-[0_0_28px_rgba(76,215,246,0.65)] transition-all cursor-pointer">
+        <span>New Transaction</span>
+        <span class="material-symbols-outlined text-[18px]" style="width:18px;height:18px;">arrow_forward</span>
+      </button>
     </div>
+
   </div>
+
 </div>

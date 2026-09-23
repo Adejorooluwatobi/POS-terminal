@@ -1,9 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Staff } from '../models/staff.model';
-import { STAFF_LIST } from '../models/mock-data';
 import { ApiService } from './api.service';
 import { StaffService } from './staff.service';
-import { tap } from 'rxjs/operators';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -13,7 +11,7 @@ export class AuthService {
   private api = inject(ApiService);
   private staffService = inject(StaffService);
   
-  staffList = signal<Staff[]>(STAFF_LIST);
+  staffList = signal<Staff[]>([]);
   currentStaff = signal<Staff | null>(null);
   selectedStaffId = signal<string | null>(null);
 
@@ -23,16 +21,22 @@ export class AuthService {
   }
 
   async fetchStaff() {
+    const token = localStorage.getItem('pos_token');
+    if (!token) {
+      this.staffList.set([]);
+      return;
+    }
+
     try {
       const list = await firstValueFrom(this.staffService.getStaffList());
-      if (list && Array.isArray(list) && list.length > 0) {
+      if (list && Array.isArray(list)) {
         this.staffList.set(list);
       } else {
-        this.staffList.set(STAFF_LIST);
+        this.staffList.set([]);
       }
     } catch (e) {
-      console.warn('Could not fetch staff from API, loaded default staff list');
-      this.staffList.set(STAFF_LIST);
+      console.warn('Could not fetch staff from API:', e);
+      this.staffList.set([]);
     }
   }
 
@@ -56,12 +60,20 @@ export class AuthService {
     return this.staffList().find(s => s.id === id);
   }
 
-  async login(pin: string, employeeNo?: string, storeId?: string): Promise<boolean> {
-    const id = employeeNo || this.selectedStaffId() || 'EMP-001'; 
-    const sId = storeId || localStorage.getItem('store_id') || '403a1850-7664-4fa7-9629-61484c66bd66';
-    
-    console.log('Attempting login with:', { id, sId, pin });
-    
+  async login(pin: string, employeeNo?: string, storeId?: string): Promise<{ success: boolean; message?: string }> {
+    const sId = storeId || localStorage.getItem('store_id');
+    const id = (employeeNo || this.selectedStaffId() || '').trim();
+
+    if (!sId) {
+      return { success: false, message: 'Workstation is not paired with a store. Please pair device first.' };
+    }
+    if (!id) {
+      return { success: false, message: 'Please enter employee number.' };
+    }
+    if (!pin) {
+      return { success: false, message: 'Please enter 4-digit PIN.' };
+    }
+
     try {
       const payload = {
         storeId: sId,
@@ -72,9 +84,9 @@ export class AuthService {
       const res = await firstValueFrom(
         this.api.post<any>('/api/auth/login-pos', payload)
       );
-      
+
       console.log('Login response:', res);
-      
+
       if (res && res.token) {
         localStorage.setItem('pos_token', res.token);
         if (res.storeName) localStorage.setItem('store_name', res.storeName);
@@ -84,15 +96,14 @@ export class AuthService {
         if (res.tenantEmail) localStorage.setItem('tenant_email', res.tenantEmail);
         if (res.businessName) localStorage.setItem('business_name', res.businessName);
 
-        // Map API response to Staff model
         const staff: Staff = {
-          id: res.userId || id, // Important: This MUST be the backend GUID (res.userId)
-          name: res.name || 'Staff',
-          initials: (res.name || 'S').split(' ').map((n:any)=>n[0]).join(''),
+          id: res.userId || res.staffId || id,
+          name: res.name || res.fullName || id,
+          initials: ((res.name || res.fullName || 'S').split(' ').map((n: any) => n[0]).join('')).toUpperCase(),
           role: (res.role || 'CASHIER').toUpperCase() as any,
           pin: pin,
-          store: localStorage.getItem('store_id') || res.storeId || sId,
-          color: '#00c2ff',
+          store: res.storeId || sId,
+          color: '#4edea3',
           businessName: res.businessName,
           storeName: res.storeName,
           storeAddress: res.storeAddress,
@@ -102,31 +113,14 @@ export class AuthService {
         };
         this.currentStaff.set(staff);
         localStorage.setItem('currentStaff', JSON.stringify(staff));
-        return true;
+        return { success: true };
       }
-    } catch (error) {
-      console.error('Remote login failed, falling back to local verification:', error);
+      return { success: false, message: 'Login failed: No authentication token returned.' };
+    } catch (error: any) {
+      console.error('Remote login failed:', error);
+      const msg = error?.error?.message || error?.error?.title || error?.message || 'Invalid POS credentials or unknown Store.';
+      return { success: false, message: msg };
     }
-
-    // Fallback: match local staff list or default demo pin (1234)
-    const local = this.staffList().find(s => s.id.toLowerCase() === id.toLowerCase()) || 
-                  STAFF_LIST.find(s => s.id.toLowerCase() === id.toLowerCase()) ||
-                  STAFF_LIST[0];
-
-    if (local && (local.pin === pin || pin === '1234')) {
-      const staff: Staff = {
-        ...local,
-        id: id || local.id,
-        store: localStorage.getItem('store_id') || sId,
-        businessName: localStorage.getItem('store_name') || 'RetailOS Victoria Island'
-      };
-      localStorage.setItem('pos_token', 'local_demo_token_' + staff.id);
-      this.currentStaff.set(staff);
-      localStorage.setItem('currentStaff', JSON.stringify(staff));
-      return true;
-    }
-
-    return false;
   }
 
   logout() {

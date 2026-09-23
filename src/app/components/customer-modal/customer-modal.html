@@ -1,42 +1,54 @@
-<div *ngIf="isOpen" class="modal-wrap">
-  <div class="modal" style="max-width:360px;">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:13px;font-weight:700;">Customer Lookup</span>
-      <button (click)="closeModal()" class="btn btn-ghost btn-xs">✕</button>
+<div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-container-lowest/80 backdrop-blur-xl animate-fade-in select-none">
+  <div class="w-full max-w-sm bg-surface-container-low border border-surface-container-high rounded-2xl shadow-2xl overflow-hidden relative">
+    
+    <div class="p-4 bg-surface-container border-b border-surface-container-high flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-secondary text-[20px]" style="width:20px;height:20px;">person_search</span>
+        <span class="font-headline-md text-caption font-bold text-on-surface uppercase tracking-wider">Customer Lookup</span>
+      </div>
+      <button (click)="closeModal()" class="w-7 h-7 rounded-lg bg-surface-container-high hover:bg-surface-bright flex items-center justify-center text-on-surface-variant hover:text-on-surface cursor-pointer">
+        <span class="material-symbols-outlined text-[16px]" style="width:16px;height:16px;">close</span>
+      </button>
     </div>
-    <div style="padding:14px 16px;">
-      <input 
-        #custSearchInput 
-        class="inp" 
-        style="margin-bottom:10px;"
-        placeholder="Phone, email, or loyalty #…" 
-        (input)="onSearch($event)"
-      >
-      <div style="display:flex;flex-direction:column;gap:5px;">
+
+    <div class="p-4 space-y-3">
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]" style="width:18px;height:18px;">search</span>
+        <input 
+          #custSearchInput 
+          class="w-full bg-surface-container-lowest border border-surface-container-high rounded-xl pl-9 pr-3 py-2 font-label-code-md text-caption text-on-surface placeholder:text-outline/50 focus:outline-none focus:border-primary" 
+          placeholder="Phone, email, or loyalty card #..." 
+          (input)="onSearch($event)"
+          autofocus
+        >
+      </div>
+
+      <div class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
         <div *ngFor="let c of searchResults()" 
              (click)="onSelect(c)"
-             style="padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <div style="font-size:12px;font-weight:600;">{{ c.name }}</div>
-            <div class="mono" style="font-size:10px;color:var(--text3);">{{ c.phone }}</div>
+             class="p-2.5 bg-surface-container hover:bg-surface-container-high border border-surface-container-high rounded-xl cursor-pointer flex items-center justify-between transition-colors">
+          <div class="min-w-0 pr-2">
+            <div class="font-body-md text-caption font-bold text-on-surface truncate">{{ c.name }}</div>
+            <div class="font-label-code-md text-[10px] text-on-surface-variant">{{ c.phone }}</div>
           </div>
-          <div style="text-align:right;">
-            <span class="tag" [ngClass]="{
-              'tag-purple': c.tier === 'PLATINUM',
-              'tag-amber': c.tier === 'GOLD',
-              'tag-dim': c.tier === 'SILVER',
-              'tag-green': c.tier === 'BRONZE'
-            }" style="font-size:9px;">{{ c.tier }}</span>
-            <div class="mono" style="font-size:10px;color:var(--accent);margin-top:3px;">{{ c.points.toLocaleString() }} pts</div>
+          <div class="text-right shrink-0">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-label-code-md font-semibold bg-secondary/15 text-secondary border border-secondary/20">
+              {{ c.tier || 'MEMBER' }}
+            </span>
+            <div class="font-label-code-md text-[10px] text-primary font-bold mt-1">{{ c.points.toLocaleString() }} pts</div>
           </div>
         </div>
         
         <div *ngIf="custSearchInput.value.length > 1 && searchResults().length === 0" 
-             class="text-center text-[var(--text3)] text-[12px] p-[12px]">
-          No customer found
+             class="text-center text-on-surface-variant font-caption text-caption p-4">
+          No matching customer found
         </div>
       </div>
-      <button (click)="setWalkin()" class="btn btn-ghost btn-sm w-full justify-center mt-[10px]">Continue as Walk-in</button>
+
+      <button (click)="setWalkin()" class="w-full py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-highest text-on-surface font-body-md text-caption font-semibold transition-colors cursor-pointer">
+        Continue as Walk-in Customer
+      </button>
     </div>
+
   </div>
 </div>

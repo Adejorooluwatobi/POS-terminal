@@ -1,177 +1,133 @@
-<div
-  style="
-    width: 380px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border);
-    background: var(--surface);
-    min-height: 0;
-  "
->
-  <!-- Search -->
-  <div style="padding: 10px; border-bottom: 1px solid var(--border)">
-    <div style="position: relative">
-      <svg
-        width="12"
-        height="12"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.5"
-        style="
-          position: absolute;
-          left: 9px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--text3);
-        "
-      >
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </svg>
-      <input
-        class="inp"
-        style="padding-left: 28px; font-size: 12px"
-        placeholder="Search product name or SKU…"
-        (input)="onSearch($event)"
-      />
-    </div>
-  </div>
+<div class="flex-1 flex flex-col gap-2 h-full min-h-0 select-none">
 
-  <!-- Category tabs -->
-  <div
-    style="
-      display: flex;
-      gap: 4px;
-      padding: 8px 10px;
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-      flex-shrink: 0;
-    "
-    class="thin-scroll"
-  >
-    <button
-      *ngFor="let cat of categories"
-      class="cat-tab btn btn-xs"
-      [class.btn-accent]="selectedCategory() === cat.id"
-      [class.btn-ghost]="selectedCategory() !== cat.id"
-      style="white-space: nowrap"
-      (click)="filterCat(cat.id)"
-    >
-      {{ cat.name }}
+  <!-- Category Filter Carousel -->
+  <div class="flex items-center gap-1 overflow-x-auto p-1 bg-surface-container-low/90 border border-surface-container-high rounded-lg shadow-inner scrollbar-none shrink-0">
+    <button *ngFor="let cat of dynamicCategories()"
+            (click)="filterCat(cat.id)"
+            class="px-2.5 py-1 rounded-md font-body-md text-[10px] font-medium tracking-wide transition-all shrink-0 cursor-pointer"
+            [class.bg-primary]="selectedCategory() === cat.id"
+            [class.text-on-primary]="selectedCategory() === cat.id"
+            [class.shadow-sm]="selectedCategory() === cat.id"
+            [class.bg-surface-container]="selectedCategory() !== cat.id"
+            [class.text-on-surface-variant]="selectedCategory() !== cat.id"
+            [class.hover:text-on-surface]="selectedCategory() !== cat.id">
+      {{ cat.name }} ({{ categoryCount(cat.id) }})
     </button>
   </div>
 
-  <!-- Products grid -->
-  <div
-    class="thin-scroll"
-    style="
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      align-content: start;
-    "
-  >
-    <div
-      *ngFor="let p of filteredProducts()"
-      class="prod-card fade-up hover-glow click-scale"
-      (click)="onProductClick(p)"
-    >
-      <div style="font-size: 24px; text-align: center; margin-bottom: 6px">{{ p.emoji }}</div>
-      <div style="font-size: 11px; font-weight: 600; line-height: 1.2; margin-bottom: 2px">
-        {{ p.name }}
+  <!-- Catalog Product Grid -->
+  <div class="flex-1 min-h-0 overflow-y-auto pr-1">
+    
+    <!-- Empty state -->
+    <div *ngIf="filteredProducts().length === 0" class="h-48 flex flex-col items-center justify-center text-center p-3">
+      <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-outline mb-1.5">
+        <span class="material-symbols-outlined text-[20px]" style="width:20px;height:20px;">inventory_2</span>
       </div>
-      <div
-        style="font-size: 10px; font-weight: 700; color: var(--green); margin-bottom: 4px"
-        class="mono"
-      >
-        ₦{{ p.price.toLocaleString() }}
-      </div>
-      <div class="mono" style="font-size: 8px; color: var(--text3)">{{ p.sku }}</div>
-      <div *ngIf="p.rollPrice || p.packPrice" style="position: absolute; top: 4px; right: 4px; font-size: 10px;">📦</div>
+      <span class="font-body-md text-[11px] text-on-surface font-medium">No products found</span>
+      <span class="font-caption text-[10px] text-on-surface-variant">Try selecting another category or check search</span>
     </div>
+
+    <!-- Product Grid -->
+    <div *ngIf="filteredProducts().length > 0" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2">
+      <div *ngFor="let p of filteredProducts()"
+           (click)="onProductClick(p)"
+           class="group relative bg-surface-container-low hover:bg-surface-container border border-surface-container-high/80 hover:border-primary/50 rounded-lg p-2 flex flex-col justify-between cursor-pointer transition-all duration-150 active:scale-95 shadow-sm hover:shadow-md">
+        
+        <!-- Card Top Bar: Code chip & Stock indicator -->
+        <div class="flex items-start justify-between">
+          <span class="font-label-code-md text-[9px] px-1 py-0.2 rounded bg-surface-container-high text-primary font-medium">
+            {{ getProductCode(p) }}
+          </span>
+          <div class="flex items-center gap-1">
+            <span *ngIf="p.rollPrice || p.packPrice" class="text-[9px] text-tertiary" title="Multi-pack options available">📦</span>
+            <span class="w-1.5 h-1.5 rounded-full"
+                  [class.bg-secondary]="(p.stock ?? 10) > 5"
+                  [class.shadow-[0_0_6px_rgba(78,222,163,0.6)]]="(p.stock ?? 10) > 5"
+                  [class.bg-amber-400]="(p.stock ?? 10) > 0 && (p.stock ?? 10) <= 5"
+                  [class.bg-error]="(p.stock ?? 10) <= 0"></span>
+          </div>
+        </div>
+
+        <!-- Center Icon / Graphic -->
+        <div class="my-2 flex items-center justify-center">
+          <div class="w-9 h-9 rounded-lg bg-surface-container-high/80 flex items-center justify-center text-primary group-hover:scale-105 group-hover:text-secondary transition-all">
+            <span class="material-symbols-outlined text-[20px]" style="width:20px;height:20px;">{{ getProductIcon(p.cat || p.category) }}</span>
+          </div>
+        </div>
+
+        <!-- Bottom Details -->
+        <div class="space-y-0.5 min-w-0">
+          <h4 class="font-body-md text-[11px] font-medium text-on-surface truncate" [title]="p.name">{{ p.name }}</h4>
+          <div class="flex items-center justify-between">
+            <span class="font-label-code-md text-caption text-secondary font-semibold">₦{{ p.price.toLocaleString() }}</span>
+            <span class="font-caption text-[9px] text-on-surface-variant">Stk: {{ p.stock ?? '∞' }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
-  <!-- Recently scanned -->
-  <div style="padding: 8px; border-top: 1px solid var(--border); flex-shrink: 0">
-    <div
-      style="
-        font-size: 10px;
-        font-weight: 600;
-        color: var(--text3);
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        margin-bottom: 6px;
-      "
-    >
-      Recently Scanned
+  <!-- Bottom Hardware Scanner Status Banner -->
+  <div class="bg-surface-container-lowest border border-surface-container-high p-1.5 rounded-lg flex items-center justify-between shadow-inner shrink-0">
+    <div class="flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-primary text-[15px] animate-spin" style="width:15px;height:15px;animation-duration:4s;">sync</span>
+      <span class="font-caption text-[10px] text-on-surface-variant">Scanner: Honeywell Voyager 1400g</span>
     </div>
-    <div style="display: flex; gap: 4px; flex-wrap: wrap">
-      <button
-        *ngFor="let p of pos.recentScanned()"
-        (click)="onProductClick(p)"
-        class="tag tag-dim"
-        style="cursor: pointer; font-size: 10px; border: 1px solid var(--border)"
-      >
-        {{ p.emoji }} {{ p.sku }}
-      </button>
-      <div
-        *ngIf="pos.recentScanned().length === 0"
-        style="font-size: 9px; color: var(--text3); font-style: italic"
-      >
-        No items scanned yet
-      </div>
-    </div>
+    <span class="font-label-code-md text-[9px] text-secondary font-medium uppercase tracking-wider">READY</span>
   </div>
 
-  <!-- Unit Selection Modal -->
-  <div *ngIf="unitSelectionProduct()" class="modal-backdrop" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-    <div class="card fade-up" style="width: 300px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <div style="font-weight: 700; font-size: 14px;">Select Unit</div>
-        <button (click)="closeUnitSelection()" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+  <!-- Multi-Unit Selection Modal Overlay -->
+  <div *ngIf="unitSelectionProduct() as p" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+    <div class="bg-surface-container-low border border-surface-container-high rounded-2xl p-6 w-full max-w-sm shadow-2xl relative">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <span class="font-caption text-[10px] text-primary uppercase tracking-widest font-bold">Select Unit Packaging</span>
+          <h3 class="font-headline-md text-body-lg text-on-surface font-bold truncate">{{ p.name }}</h3>
+        </div>
+        <button (click)="closeUnitSelection()" class="w-7 h-7 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface flex items-center justify-center cursor-pointer">
+          <span class="material-symbols-outlined text-[16px]" style="width:16px;height:16px;">close</span>
+        </button>
       </div>
-      
-      <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: var(--text2);">{{ unitSelectionProduct()?.name }}</div>
 
-      <!-- Quantity Input -->
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 6px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;">
-        <span style="font-size: 11px; font-weight: 600; color: var(--text2);">Quantity:</span>
-        <div style="display: flex; align-items: center; gap: 4px;">
-          <button type="button" class="btn btn-ghost btn-xs" style="width: 24px; height: 24px; padding: 0; justify-content: center;" (click)="changeUnitQty(-1)">−</button>
-          <input type="text" 
-                 inputmode="numeric"
-                 pattern="[0-9]*"
-                 [value]="unitQty()" 
-                 (focus)="$any($event.target).select()" 
-                 (change)="onUnitQtyChange($event)" 
-                 (blur)="onUnitQtyChange($event)"
-                 class="qty-input mono" 
-                 style="width: 58px; height: 24px; font-size: 12px; font-weight: 700;">
-          <button type="button" class="btn btn-ghost btn-xs" style="width: 24px; height: 24px; padding: 0; justify-content: center;" (click)="changeUnitQty(1)">+</button>
+      <!-- Quantity Stepper -->
+      <div class="flex items-center justify-between bg-surface-container-lowest border border-surface-container-high rounded-xl p-2.5 mb-4">
+        <span class="font-caption text-[11px] text-outline uppercase font-semibold">Quantity</span>
+        <div class="flex items-center gap-2">
+          <button (click)="changeUnitQty(-1)" class="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-body-md flex items-center justify-center cursor-pointer">-</button>
+          <span class="font-label-code-md text-body-lg font-bold text-on-surface px-2">{{ unitQty() }}</span>
+          <button (click)="changeUnitQty(1)" class="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-body-md flex items-center justify-center cursor-pointer">+</button>
         </div>
       </div>
 
-      <div style="display: grid; gap: 10px;">
-        <button class="btn btn-secondary" style="justify-content: space-between; padding: 12px 15px;" (click)="selectUnitAndAdd('Single')">
-          <span>Single</span>
-          <span class="mono">₦{{ unitSelectionProduct()?.price?.toLocaleString() }}</span>
+      <!-- Unit Options Grid -->
+      <div class="flex flex-col gap-2 mb-4">
+        <button (click)="selectUnitAndAdd('Single')" class="p-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-high flex items-center justify-between cursor-pointer transition-colors">
+          <div class="flex flex-col text-left">
+            <span class="font-body-md text-caption font-bold text-on-surface">Single Unit</span>
+            <span class="font-caption text-[10px] text-on-surface-variant">Standard item quantity</span>
+          </div>
+          <span class="font-label-code-md text-body-md text-secondary font-bold">₦{{ p.price.toLocaleString() }}</span>
         </button>
-        
-        <button *ngIf="unitSelectionProduct()?.rollPrice" class="btn btn-secondary" style="justify-content: space-between; padding: 12px 15px;" (click)="selectUnitAndAdd('Roll')">
-          <span>Roll ({{ unitSelectionProduct()?.singlesPerRoll || '?' }} singles)</span>
-          <span class="mono">₦{{ unitSelectionProduct()?.rollPrice?.toLocaleString() }}</span>
+
+        <button *ngIf="p.rollPrice" (click)="selectUnitAndAdd('Roll')" class="p-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-high flex items-center justify-between cursor-pointer transition-colors">
+          <div class="flex flex-col text-left">
+            <span class="font-body-md text-caption font-bold text-on-surface">Roll Pack</span>
+            <span class="font-caption text-[10px] text-on-surface-variant">Roll packaging bundle</span>
+          </div>
+          <span class="font-label-code-md text-body-md text-secondary font-bold">₦{{ p.rollPrice.toLocaleString() }}</span>
         </button>
-        
-        <button *ngIf="unitSelectionProduct()?.packPrice" class="btn btn-accent" style="justify-content: space-between; padding: 12px 15px;" (click)="selectUnitAndAdd('Pack')">
-          <span>Pack ({{ unitSelectionProduct()?.singlesPerPack || unitSelectionProduct()?.rollsPerPack || '?' }} singles)</span>
-          <span class="mono">₦{{ unitSelectionProduct()?.packPrice?.toLocaleString() }}</span>
+
+        <button *ngIf="p.packPrice" (click)="selectUnitAndAdd('Pack')" class="p-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-high flex items-center justify-between cursor-pointer transition-colors">
+          <div class="flex flex-col text-left">
+            <span class="font-body-md text-caption font-bold text-on-surface">Carton / Bulk Pack</span>
+            <span class="font-caption text-[10px] text-on-surface-variant">Master carton pack</span>
+          </div>
+          <span class="font-label-code-md text-body-md text-secondary font-bold">₦{{ p.packPrice.toLocaleString() }}</span>
         </button>
       </div>
     </div>
   </div>
+
 </div>
