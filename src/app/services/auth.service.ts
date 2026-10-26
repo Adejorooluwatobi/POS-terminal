@@ -75,11 +75,15 @@ export class AuthService {
     }
 
     try {
-      const payload = {
+      const terminalId = localStorage.getItem('terminal_id');
+      const payload: any = {
         storeId: sId,
         employeeNo: id,
         pin: pin
       };
+      if (terminalId) {
+        payload.terminalId = terminalId;
+      }
 
       const res = await firstValueFrom(
         this.api.post<any>('/api/auth/login-pos', payload)

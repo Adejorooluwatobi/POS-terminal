@@ -10,7 +10,17 @@
         </span>
         <span class="font-label-code-md text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold">TERMINAL · {{ terminalCode() }}</span>
         <span class="text-outline">•</span>
-        <span class="font-caption text-[11px] text-secondary font-semibold">READY</span>
+        @if (isLeaseExpired()) {
+          <span class="font-caption text-[11px] text-error font-semibold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[13px]" style="width:13px;height:13px;">warning</span> LEASE EXPIRED
+          </span>
+        } @else if (leaseDaysRemaining() !== null) {
+          <span class="font-caption text-[11px] text-secondary font-semibold">
+            {{ leaseDaysRemaining() }}d LEASE
+          </span>
+        } @else {
+          <span class="font-caption text-[11px] text-secondary font-semibold">READY</span>
+        }
       </div>
       <h1 class="font-headline-lg text-headline-lg tracking-tight text-on-surface font-bold">RetailOS</h1>
       <p class="font-label-code-md text-caption text-primary tracking-widest uppercase mt-0.5">Point of Sale Workstation</p>
@@ -98,9 +108,20 @@
         </div>
 
         <!-- Error Feedback Banner -->
-        <div *ngIf="error()" class="mb-3 p-2 rounded-lg bg-error-container/40 border border-error/30 text-error text-center font-caption text-[11px] font-semibold animate-fade-in">
-          {{ error() }}
-        </div>
+        @if (error()) {
+          <div class="mb-3 p-3 rounded-xl bg-error-container/40 border border-error/30 text-error font-caption text-[11px] font-semibold animate-fade-in flex flex-col items-center gap-2">
+            <div class="flex items-center gap-1.5 text-center">
+              <span class="material-symbols-outlined text-[16px] shrink-0" style="width:16px;height:16px;">error</span>
+              <span>{{ error() }}</span>
+            </div>
+            @if (isLeaseOrDisconnectError()) {
+              <button type="button" (click)="goToReconnect()" class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-caption text-[11px] font-bold flex items-center gap-1.5 shadow-md hover:bg-primary-container transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">sync_lock</span>
+                <span>Enter Reconnect PIN</span>
+              </button>
+            }
+          </div>
+        }
 
         <!-- Tactile 3x4 Touch Keypad -->
         <div class="grid grid-cols-3 gap-2">

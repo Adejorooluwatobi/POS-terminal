@@ -41,6 +41,7 @@ export class TerminalService {
             if (res.terminal.storeCity) localStorage.setItem('store_city', res.terminal.storeCity);
             if (res.terminal.storePhone) localStorage.setItem('store_phone', res.terminal.storePhone);
             if (res.terminal.tenantEmail) localStorage.setItem('tenant_email', res.terminal.tenantEmail);
+            if (res.terminal.leaseExpiresAt) localStorage.setItem('lease_expires_at', res.terminal.leaseExpiresAt);
             this.pairedTerminal.set(res.terminal);
           }
           this.isPaired.set(true);
@@ -59,6 +60,31 @@ export class TerminalService {
     return localStorage.getItem('terminal_token');
   }
 
+  getLeaseExpiresAt(): string | null {
+    return localStorage.getItem('lease_expires_at');
+  }
+
+  isLeaseExpired(): boolean {
+    const lease = this.getLeaseExpiresAt();
+    if (!lease) return false;
+    try {
+      return new Date(lease).getTime() < Date.now();
+    } catch {
+      return false;
+    }
+  }
+
+  getDaysRemaining(): number | null {
+    const lease = this.getLeaseExpiresAt();
+    if (!lease) return null;
+    try {
+      const diff = new Date(lease).getTime() - Date.now();
+      return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    } catch {
+      return null;
+    }
+  }
+
   unpair() {
     localStorage.removeItem('terminal_token');
     localStorage.removeItem('terminal_data');
@@ -71,6 +97,7 @@ export class TerminalService {
     localStorage.removeItem('store_phone');
     localStorage.removeItem('tenant_email');
     localStorage.removeItem('business_name');
+    localStorage.removeItem('lease_expires_at');
     localStorage.removeItem('pos_token');
     localStorage.removeItem('currentStaff');
     localStorage.removeItem('active_till_session');

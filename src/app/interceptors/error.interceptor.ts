@@ -15,10 +15,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       } else {
         switch (error.status) {
           case 401:
-            errorMessage = 'Unauthorized: Invalid credentials or session expired.';
+            errorMessage = error.error?.message || 'Unauthorized: Invalid credentials or session expired.';
             break;
           case 403:
-            errorMessage = 'Forbidden: You do not have permission for this action.';
+            errorMessage = error.error?.message || 'Forbidden: You do not have permission for this action.';
             break;
           case 404:
             errorMessage = 'Not Found: The requested resource does not exist.';

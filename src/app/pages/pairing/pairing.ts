@@ -28,6 +28,13 @@ export class Pairing implements AfterViewInit {
     const tid = localStorage.getItem('terminal_id');
     return tid ? `HW-ID: TRM-${tid.substring(0, 8).toUpperCase()}` : 'HW-ID: TRM-8842-AX9';
   });
+  terminalCode = computed(() => localStorage.getItem('terminal_code') || '');
+  isReconnecting = computed(() => !!this.terminalCode());
+
+  resetTerminalConfig() {
+    this.terminalService.unpair();
+    this.clearCode();
+  }
 
   ngAfterViewInit() {
     setTimeout(() => this.focusHiddenInput(), 200);
