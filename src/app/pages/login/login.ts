@@ -31,11 +31,22 @@ export class Login implements OnInit {
   terminalCode = computed(() => (this.terminalService.pairedTerminal() as any)?.code || (this.terminalService.pairedTerminal() as any)?.terminalCode || localStorage.getItem('terminal_code') || 'READY');
 
   isInputReady = computed(() => !!this.employeeNo().trim());
+  leaseDaysRemaining = computed(() => this.terminalService.getDaysRemaining());
+  isLeaseExpired = computed(() => this.terminalService.isLeaseExpired());
+  isLeaseOrDisconnectError = computed(() => {
+    const err = this.error().toLowerCase();
+    return err.includes('lease') || err.includes('disconnect') || err.includes('reconnect') || this.isLeaseExpired();
+  });
 
   ngOnInit() {
     // If workstation has not been paired to a store yet, redirect to pairing protocol
     if (!this.terminalService.isPaired() || !this.storeId()) {
       this.router.navigate(['/pairing']);
+      return;
+    }
+
+    if (this.isLeaseExpired()) {
+      this.error.set('Terminal 30-day lease has expired. Please enter a reconnect PIN to reactivate.');
     }
   }
 
@@ -151,6 +162,10 @@ export class Login implements OnInit {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  goToReconnect() {
+    this.router.navigate(['/pairing']);
   }
 
   goToPairing() {
