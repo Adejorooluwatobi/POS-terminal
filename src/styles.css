@@ -2,74 +2,6 @@
 
 /* ─── CSS VARIABLES & THEME TOKENS ────────────────────────────────────── */
 :root,
-:root[data-theme="dark"],
-[data-theme="dark"],
-.dark {
-  /* Tailwind Design Tokens (RGB triplets for <alpha-value> replacement) */
-  --color-surface-bright:            49 57 77;
-  --color-surface-container-lowest:  6 14 32;
-  --color-surface-container-low:     19 27 46;
-  --color-surface-container:         23 31 51;
-  --color-surface-container-high:    34 42 61;
-  --color-surface-container-highest: 45 52 73;
-  --color-surface:                   11 19 38;
-  --color-surface-dim:               11 19 38;
-  --color-surface-variant:           45 52 73;
-  --color-surface-tint:              76 215 246;
-  --color-background:                11 19 38;
-  --color-on-background:             218 226 253;
-  --color-on-surface:                218 226 253;
-  --color-on-surface-variant:        188 201 205;
-  --color-inverse-surface:           218 226 253;
-  --color-inverse-on-surface:        40 48 68;
-  --color-primary:                   76 215 246;
-  --color-primary-container:         6 182 212;
-  --color-primary-fixed:             172 237 255;
-  --color-primary-fixed-dim:         76 215 246;
-  --color-on-primary:                0 54 64;
-  --color-on-primary-container:      0 66 79;
-  --color-secondary:                 78 222 163;
-  --color-secondary-container:       0 165 114;
-  --color-secondary-fixed:           111 251 190;
-  --color-secondary-fixed-dim:       78 222 163;
-  --color-on-secondary:              0 56 36;
-  --color-on-secondary-container:    0 49 31;
-  --color-tertiary:                  123 208 255;
-  --color-tertiary-container:        35 178 236;
-  --color-tertiary-fixed:            196 231 255;
-  --color-tertiary-fixed-dim:        123 208 255;
-  --color-on-tertiary:               0 53 74;
-  --color-outline:                   134 147 151;
-  --color-outline-variant:           61 73 76;
-  --color-error:                     255 180 171;
-  --color-error-container:           147 0 10;
-  --color-on-error:                  105 0 5;
-  --color-on-error-container:        255 218 214;
-
-  /* Custom CSS Variables (Obsidian Dark) */
-  --bg:          #0b1326;
-  --surface:     #131b2e;
-  --surface2:    #171f33;
-  --surface3:    #222a3d;
-  --surface4:    #2d3449;
-  --border:      #2d3449;
-  --border2:     #3d494c;
-  --text:        #dae2fd;
-  --text2:       #bcc9cd;
-  --text3:       #869397;
-  --accent:      #4cd7f6;
-  --accent-dim:  rgba(76,215,246,0.12);
-  --accent-glow: rgba(76,215,246,0.25);
-  --green:       #4edea3;
-  --green-dim:   rgba(78,222,163,0.12);
-  --amber:       #f5a623;
-  --amber-dim:   rgba(245,166,35,0.12);
-  --red:         #ffb4ab;
-  --red-dim:     rgba(147,0,10,0.25);
-  --purple:      #c4e7ff;
-  --scanner-bg:  #060e20;
-}
-
 :root[data-theme="light"],
 [data-theme="light"],
 .light {
@@ -136,6 +68,74 @@
   --red-dim:     rgba(220,38,38,0.08);
   --purple:      #7c3aed;
   --scanner-bg:  #f1f5f9;
+}
+
+:root[data-theme="dark"],
+[data-theme="dark"],
+.dark {
+  /* Tailwind Design Tokens (RGB triplets for <alpha-value> replacement) */
+  --color-surface-bright:            49 57 77;
+  --color-surface-container-lowest:  6 14 32;
+  --color-surface-container-low:     19 27 46;
+  --color-surface-container:         23 31 51;
+  --color-surface-container-high:    34 42 61;
+  --color-surface-container-highest: 45 52 73;
+  --color-surface:                   11 19 38;
+  --color-surface-dim:               11 19 38;
+  --color-surface-variant:           45 52 73;
+  --color-surface-tint:              76 215 246;
+  --color-background:                11 19 38;
+  --color-on-background:             218 226 253;
+  --color-on-surface:                218 226 253;
+  --color-on-surface-variant:        188 201 205;
+  --color-inverse-surface:           218 226 253;
+  --color-inverse-on-surface:        40 48 68;
+  --color-primary:                   76 215 246;
+  --color-primary-container:         6 182 212;
+  --color-primary-fixed:             172 237 255;
+  --color-primary-fixed-dim:         76 215 246;
+  --color-on-primary:                0 54 64;
+  --color-on-primary-container:      0 66 79;
+  --color-secondary:                 78 222 163;
+  --color-secondary-container:       0 165 114;
+  --color-secondary-fixed:           111 251 190;
+  --color-secondary-fixed-dim:       78 222 163;
+  --color-on-secondary:              0 56 36;
+  --color-on-secondary-container:    0 49 31;
+  --color-tertiary:                  123 208 255;
+  --color-tertiary-container:        35 178 236;
+  --color-tertiary-fixed:            196 231 255;
+  --color-tertiary-fixed-dim:        123 208 255;
+  --color-on-tertiary:               0 53 74;
+  --color-outline:                   134 147 151;
+  --color-outline-variant:           61 73 76;
+  --color-error:                     255 180 171;
+  --color-error-container:           147 0 10;
+  --color-on-error:                  105 0 5;
+  --color-on-error-container:        255 218 214;
+
+  /* Custom CSS Variables (Obsidian Dark) */
+  --bg:          #0b1326;
+  --surface:     #131b2e;
+  --surface2:    #171f33;
+  --surface3:    #222a3d;
+  --surface4:    #2d3449;
+  --border:      #2d3449;
+  --border2:     #3d494c;
+  --text:        #dae2fd;
+  --text2:       #bcc9cd;
+  --text3:       #869397;
+  --accent:      #4cd7f6;
+  --accent-dim:  rgba(76,215,246,0.12);
+  --accent-glow: rgba(76,215,246,0.25);
+  --green:       #4edea3;
+  --green-dim:   rgba(78,222,163,0.12);
+  --amber:       #f5a623;
+  --amber-dim:   rgba(245,166,35,0.12);
+  --red:         #ffb4ab;
+  --red-dim:     rgba(147,0,10,0.25);
+  --purple:      #c4e7ff;
+  --scanner-bg:  #060e20;
 }
 
 * { box-sizing:border-box; margin:0; padding:0; }

@@ -6,7 +6,7 @@ const THEME_STORAGE_KEY = 'retail_os_theme';
   providedIn: 'root'
 })
 export class ThemeService {
-  public theme = signal<'dark' | 'light'>('dark');
+  public theme = signal<'dark' | 'light'>('light');
 
   constructor() {
     const saved = (typeof localStorage !== 'undefined' ? localStorage.getItem(THEME_STORAGE_KEY) : null) as 'dark' | 'light' | null;
@@ -16,7 +16,11 @@ export class ThemeService {
       const currentAttr = document.documentElement.getAttribute('data-theme');
       if (currentAttr === 'light' || currentAttr === 'dark') {
         this.theme.set(currentAttr);
+      } else {
+        this.theme.set('light');
       }
+    } else {
+      this.theme.set('light');
     }
 
     this.applyTheme(this.theme());
