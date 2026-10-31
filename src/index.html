@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <title>POS Terminal</title>
@@ -16,7 +16,7 @@
       (function() {
         try {
           var saved = localStorage.getItem('retail_os_theme');
-          var theme = (saved === 'light' || saved === 'dark') ? saved : 'dark';
+          var theme = (saved === 'light' || saved === 'dark') ? saved : 'light';
           document.documentElement.setAttribute('data-theme', theme);
           if (theme === 'dark') {
             document.documentElement.classList.add('dark');
