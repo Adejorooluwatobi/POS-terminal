@@ -158,9 +158,9 @@
         <span>Re-link Workstation</span>
       </button>
 
-      <button (click)="themeService.toggleTheme()" class="font-caption text-[11px] text-on-surface-variant hover:text-primary flex items-center gap-1 transition-colors cursor-pointer">
-        <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">dark_mode</span>
-        <span>Toggle Theme</span>
+      <button (click)="themeService.toggleTheme()" class="font-caption text-[11px] text-on-surface-variant hover:text-primary flex items-center gap-1 transition-colors cursor-pointer" [title]="themeService.theme() === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        <span class="material-symbols-outlined text-[14px]" style="width:14px;height:14px;">{{ themeService.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+        <span>{{ themeService.theme() === 'dark' ? 'Light Mode' : 'Dark Mode' }}</span>
       </button>
     </div>
 
